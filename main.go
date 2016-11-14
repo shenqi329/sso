@@ -18,11 +18,13 @@ func main() {
 
 	e.Use(echomiddleware.Logger())
 
-	e.GET("/user/login", controller.Login)
-	e.POST("/user/login", controller.Login)
+	e.POST("/user/login", controller.UserLogin)
+	e.POST("/user/register", controller.UserRegister)
 
 	e.GET("/", defaultServer)
 
-	fmt.Println("server run on port:81")
-	e.Run(standard.New(":81"))
+	e.SetDebug(true)
+
+	fmt.Println("server run on port:80")
+	e.Run(standard.New(":80"))
 }
