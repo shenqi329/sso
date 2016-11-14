@@ -49,7 +49,7 @@ func UserLogin(c echo.Context) error {
 		response.Desc = util.StatusText(util.StatusIllegalParam)
 		return c.JSON(http.StatusOK, response)
 	}
-	user, err := service.UserLogin(user)
+	token, user, err := service.UserLogin(user)
 
 	if err != nil {
 		c.Logger().Debug("error:" + err.Error())
@@ -60,8 +60,11 @@ func UserLogin(c echo.Context) error {
 		response.Desc = util.StatusText(util.StatusResourceNoExist)
 		return c.JSON(http.StatusOK, response)
 	}
+
 	response.Data = map[string]string{
-		"id": user.ID.Hex(),
+		"id":    user.ID.Hex(),
+		"token": token.Token,
 	}
+
 	return c.JSON(http.StatusOK, response)
 }

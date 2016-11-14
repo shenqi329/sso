@@ -7,6 +7,8 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"sso/bean"
 	"sso/mongodb"
+	"sso/uuid"
+	"time"
 )
 
 var (
@@ -40,23 +42,39 @@ func GetUser(name string) (*bean.User, error) {
 	return &user, nil //查询
 }
 
-func UserLogin(user *bean.User) (*bean.User, error) {
+func UserLogin(user *bean.User) (*bean.Token, *bean.User, error) {
 
 	if len(user.Name) == 0 || len(user.Password) == 0 {
-		return nil, ErrorUserParams
+		return nil, nil, ErrorUserParams
 	}
 
 	result, err := GetUser(user.Name)
 
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if result == nil {
-		return nil, ErrorUserNoExist
+		return nil, nil, ErrorUserNoExist
 	}
 
-	return result, nil
+	token := new(bean.Token)
+	token.UserId = user.ID.Hex()
+	token.Token = uuid.Rand().Hex()
+	token.CreateTime = time.Now()
+
+	session := mongodb.GetSession()
+	c := session.DB("db_sso").C("t_token")
+	if c == nil {
+		return nil, nil, ErrorUserDBTableFail
+	}
+	err = c.Insert(token)
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return token, result, nil
 }
 
 func UserRegister(user *bean.User) (*bean.User, error) {
@@ -80,6 +98,7 @@ func UserRegister(user *bean.User) (*bean.User, error) {
 		return nil, ErrorUserExist
 	}
 
+	user.CreateTime = time.Now()
 	err = c.Insert(user)
 
 	if err != nil {

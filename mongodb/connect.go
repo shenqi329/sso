@@ -3,7 +3,7 @@ package mongodb
 import (
 	"fmt"
 	"gopkg.in/mgo.v2"
-	//"gopkg.in/mgo.v2/bson"
+	"time"
 )
 
 var session *mgo.Session
@@ -27,6 +27,14 @@ func Connect() *mgo.Session {
 	fmt.Println("mongodb:连接成功")
 
 	session.SetMode(mgo.Monotonic, true)
+
+	c := session.DB("db_sso").C("t_user")
+
+	index := mgo.Index{
+		Key:         []string{"CreateTime"},
+		ExpireAfter: 1 * time.Minute,
+	}
+	c.EnsureIndex(index)
 
 	return session
 }

@@ -3,6 +3,7 @@ package bean
 import (
 	//"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
+	"time"
 )
 
 const (
@@ -12,10 +13,11 @@ const (
 
 type (
 	User struct {
-		ID       bson.ObjectId `json:"id" bson:"_id,omitempty"`
-		Name     string        `json:"name" bson:"name" form:"name"`
-		Password string        `json:"password" bson:"password" form:"password"`
-		NickName string        `json:"nickname" bson:"nickname" form:"nickname"`
+		ID         bson.ObjectId `json:"id" bson:"_id,omitempty"`
+		Name       string        `json:"name" bson:"name" form:"name"`
+		Password   string        `json:"password" bson:"password" form:"password"`
+		NickName   string        `json:"nickname" bson:"nickname" form:"nickname"`
+		CreateTime time.Time     `json:"createTime" bson:"createTime" form:"createTime"`
 	}
 )
 
