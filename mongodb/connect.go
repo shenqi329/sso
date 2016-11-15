@@ -21,7 +21,6 @@ func Connect() *mgo.Session {
 
 	if err != nil {
 		fmt.Println("mongodb:连接失败")
-		//panic(err)
 		return nil
 	}
 	fmt.Println("mongodb:连接成功")

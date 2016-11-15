@@ -35,11 +35,38 @@ func UserRegister(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
+func UserLogout(c echo.Context) error {
+
+	token := c.Request().Header().Get("token")
+	response := bean.Response{Code: util.StatusOK, Desc: util.StatusText(util.StatusOK)}
+
+	if len(token) == 0 {
+		response.Code = util.StatusIllegalParam
+		response.Desc = util.StatusText(util.StatusIllegalParam)
+		return c.JSON(http.StatusOK, response)
+	}
+
+	err := service.UserLogout(token)
+	if err != nil {
+		if err == service.ErrorServiceNotFound {
+			response.Code = util.StatusResourceNoExist
+			response.Desc = util.StatusText(util.StatusResourceNoExist)
+		} else {
+			response.Code = util.StatusInnerError
+			response.Desc = util.StatusText(util.StatusInnerError)
+		}
+		return c.JSON(http.StatusOK, response)
+	}
+
+	return c.JSON(http.StatusOK, response)
+}
+
 func UserLogin(c echo.Context) error {
 
 	user := new(bean.User)
 	response := bean.Response{Code: util.StatusOK, Desc: util.StatusText(util.StatusOK)}
-	if error := c.Bind(user); error != nil {
+
+	if err := c.Bind(user); err != nil {
 		response.Code = util.StatusIllegalParam
 		response.Desc = util.StatusText(util.StatusIllegalParam)
 		return c.JSON(http.StatusOK, response)

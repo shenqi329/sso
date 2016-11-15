@@ -20,6 +20,7 @@ func main() {
 
 	e.POST("/user/login", controller.UserLogin)
 	e.POST("/user/register", controller.UserRegister)
+	e.POST("/user/logout", controller.UserLogout)
 
 	e.GET("/", defaultServer)
 

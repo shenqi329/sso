@@ -95,6 +95,9 @@ func UserLogout(token string) error {
 	err := dao.RemoveTokenByToken(token)
 
 	if err != nil {
+		if err == dao.ErrorDaoNotFound {
+			return ErrorServiceNotFound
+		}
 		return ErrorServiceDBError
 	}
 
@@ -106,7 +109,7 @@ func UserRegister(user *bean.User) (*bean.User, error) {
 	if len(user.Name) == 0 || len(user.Password) == 0 {
 		return nil, ErrorServiceParams
 	}
-	result, err := dao.GetUserById(user.Name)
+	result, err := dao.GetUserByName(user.Name)
 	if err != nil && err != dao.ErrorDaoNotFound {
 		return nil, ErrorServiceNotFound
 	}
@@ -121,5 +124,6 @@ func UserRegister(user *bean.User) (*bean.User, error) {
 	if err != nil {
 		return nil, ErrorServiceDBError
 	}
+
 	return user, nil
 }

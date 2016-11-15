@@ -1,6 +1,7 @@
 package dao
 
 import (
+	"fmt"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"sso/bean"
@@ -28,7 +29,7 @@ func GetTokenByToken(token string) (*bean.Token, error) {
 
 	session := mongodb.GetSession()
 
-	c := session.DB("db_sso").C("t_user")
+	c := session.DB("db_sso").C("t_token")
 	if c == nil {
 		return nil, ErrorDaoDBInnerFail
 	}
@@ -48,13 +49,14 @@ func GetTokenByToken(token string) (*bean.Token, error) {
 func RemoveTokenByToken(token string) error {
 	session := mongodb.GetSession()
 
-	c := session.DB("db_sso").C("t_user")
+	c := session.DB("db_sso").C("t_token")
 	if c == nil {
 		return ErrorDaoDBInnerFail
 	}
 
 	err := c.Remove(bson.D{{"token", token}})
 	if err != nil {
+		fmt.Println("RemoveTokenByToken:" + err.Error())
 		if err == mgo.ErrNotFound {
 			return ErrorDaoNotFound
 		}

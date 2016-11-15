@@ -5,6 +5,7 @@ const (
 	StatusIllegalParam    = "000002"
 	StatusResourceNoExist = "000003"
 	StatusResourceExist   = "000004"
+	StatusInnerError      = "000005"
 )
 
 var statusText = map[string]string{
@@ -12,6 +13,7 @@ var statusText = map[string]string{
 	StatusIllegalParam:    "illegal parameter",
 	StatusResourceNoExist: "resource no exist",
 	StatusResourceExist:   "resource exist",
+	StatusInnerError:      "inner error",
 }
 
 func StatusText(code string) string {
