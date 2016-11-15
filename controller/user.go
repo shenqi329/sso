@@ -8,6 +8,17 @@ import (
 	"sso/util"
 )
 
+func UserUpdate(c echo.Context) {
+	token := c.Request().Header().Get("token")
+	response := bean.Response{Code: util.StatusOK, Desc: util.StatusText(util.StatusOK)}
+
+	if len(token) == 0 {
+		response.Code = util.StatusIllegalParam
+		response.Desc = util.StatusText(util.StatusIllegalParam)
+		return c.JSON(http.StatusOK, response)
+	}
+}
+
 func UserRegister(c echo.Context) error {
 	user := new(bean.User)
 	response := bean.Response{Code: util.StatusOK, Desc: util.StatusText(util.StatusOK)}
