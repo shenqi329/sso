@@ -2,60 +2,74 @@ package service
 
 import (
 	"errors"
-	"fmt"
 	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 	"sso/bean"
-	"sso/mongodb"
+	"sso/dao"
 	"sso/uuid"
 	"time"
 )
 
 var (
-	ErrorUserParams      = errors.New("参数错误")
-	ErrorUserNoExist     = errors.New("用户不存在")
-	ErrorUserExist       = errors.New("用户已存在")
-	ErrorUserDBTableFail = errors.New("获取数据库表失败")
-	ErrorUserDBFindError = errors.New("数据查询错误")
-	ErrorUserNotFound    = errors.New("数据未找到")
+	ErrorServiceParams   = errors.New("参数错误")
+	ErrorServiceExist    = errors.New("资源已存在")
+	ErrorServiceDBError  = errors.New("数据库异常")
+	ErrorServiceNotFound = errors.New("数据未找到")
 )
 
-func GetUser(name string) (*bean.User, error) {
+func GetUserBean(name string) (*bean.User, error) {
 
-	session := mongodb.GetSession()
+	user, err := dao.GetUserByName(name)
 
-	c := session.DB("db_sso").C("t_user")
-	if c == nil {
-		return nil, ErrorUserDBTableFail
-	}
-
-	user := bean.User{}
-	err := c.Find(bson.M{"name": name}).One(&user)
 	if err != nil {
-		fmt.Println("getuser,err" + err.Error())
-		if err == mgo.ErrNotFound {
-			return nil, ErrorUserNotFound //说明没有查询到，用户不存在
+		if err == dao.ErrorDaoNotFound {
+			return nil, ErrorServiceNotFound //说明没有查询到，用户不存在
 		}
-		return nil, ErrorUserDBFindError //查询发生错误
+		return nil, ErrorServiceDBError //查询发生错误
 	}
-	fmt.Println("name:" + user.Name)
-	return &user, nil //查询
+	return user, nil //查询
+}
+
+func GetUserBeanById(id string) (*bean.User, error) {
+
+	user, err := dao.GetUserById(id)
+
+	if err != nil {
+		if err == dao.ErrorDaoNotFound {
+			return nil, ErrorServiceNotFound //说明没有查询到，用户不存在
+		}
+		return nil, ErrorServiceDBError //查询发生错误
+	}
+	return user, nil //查询
+}
+
+func GetTokenBean(token string) (*bean.Token, error) {
+
+	tokenBean, err := dao.GetTokenByToken(token)
+
+	if err != nil {
+		if err == mgo.ErrNotFound {
+			return nil, ErrorServiceNotFound
+		}
+		return nil, ErrorServiceDBError
+	}
+
+	return tokenBean, nil
 }
 
 func UserLogin(user *bean.User) (*bean.Token, *bean.User, error) {
 
 	if len(user.Name) == 0 || len(user.Password) == 0 {
-		return nil, nil, ErrorUserParams
+		return nil, nil, ErrorServiceParams
 	}
 
-	result, err := GetUser(user.Name)
+	result, err := dao.GetUserByName(user.Name)
 
 	if err != nil {
 		return nil, nil, err
 	}
 
 	if result == nil {
-		return nil, nil, ErrorUserNoExist
+		return nil, nil, ErrorServiceNotFound
 	}
 
 	token := new(bean.Token)
@@ -63,47 +77,49 @@ func UserLogin(user *bean.User) (*bean.Token, *bean.User, error) {
 	token.Token = uuid.Rand().Hex()
 	token.CreateTime = time.Now()
 
-	session := mongodb.GetSession()
-	c := session.DB("db_sso").C("t_token")
-	if c == nil {
-		return nil, nil, ErrorUserDBTableFail
-	}
-	err = c.Insert(token)
+	dao.InsertToken(token)
 
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, ErrorServiceDBError
 	}
 
 	return token, result, nil
 }
 
+func UserLogout(token string) error {
+
+	if len(token) == 0 {
+		return ErrorServiceParams
+	}
+
+	err := dao.RemoveTokenByToken(token)
+
+	if err != nil {
+		return ErrorServiceDBError
+	}
+
+	return nil
+}
+
 func UserRegister(user *bean.User) (*bean.User, error) {
 
 	if len(user.Name) == 0 || len(user.Password) == 0 {
-		return nil, ErrorUserParams
+		return nil, ErrorServiceParams
 	}
-
-	session := mongodb.GetSession()
-
-	c := session.DB("db_sso").C("t_user")
-	if c == nil {
-		return nil, ErrorUserDBTableFail
-	}
-
-	result, err := GetUser(user.Name)
-	if err != nil && err != ErrorUserNotFound {
-		return nil, err
+	result, err := dao.GetUserById(user.Name)
+	if err != nil && err != dao.ErrorDaoNotFound {
+		return nil, ErrorServiceNotFound
 	}
 	if result != nil {
-		return nil, ErrorUserExist
+		return nil, ErrorServiceExist
 	}
 
 	user.CreateTime = time.Now()
-	err = c.Insert(user)
+
+	err = dao.InsertUser(user)
 
 	if err != nil {
-		return nil, err
+		return nil, ErrorServiceDBError
 	}
-
 	return user, nil
 }
