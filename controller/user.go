@@ -8,15 +8,36 @@ import (
 	"sso/util"
 )
 
-func UserUpdate(c echo.Context) {
+// func UserUpdate(c echo.Context) error {
+// 	token := c.Request().Header().Get("token")
+// 	response := bean.Response{Code: util.StatusOK, Desc: util.StatusText(util.StatusOK)}
+
+// 	if len(token) == 0 {
+// 		response.Code = util.StatusIllegalParam
+// 		response.Desc = util.StatusText(util.StatusIllegalParam)
+// 		return c.JSON(http.StatusOK, response)
+// 	}
+// }
+
+func UserInfo(c echo.Context) error {
 	token := c.Request().Header().Get("token")
 	response := bean.Response{Code: util.StatusOK, Desc: util.StatusText(util.StatusOK)}
 
-	if len(token) == 0 {
-		response.Code = util.StatusIllegalParam
-		response.Desc = util.StatusText(util.StatusIllegalParam)
+	tokenBean, err := service.GetTokenBean(token)
+	if err != nil {
+		if err == service.ErrorServiceNotFound {
+			response.Code = util.StatusResourceNoExist
+			response.Desc = util.StatusText(util.StatusResourceNoExist)
+		} else {
+			response.Code = util.StatusInnerError
+			response.Desc = util.StatusText(util.StatusInnerError)
+		}
 		return c.JSON(http.StatusOK, response)
 	}
+	response.Data = map[string]interface{}{
+		"userId": tokenBean.UserId,
+	}
+	return c.JSON(http.StatusOK, response)
 }
 
 func UserRegister(c echo.Context) error {
@@ -99,8 +120,8 @@ func UserLogin(c echo.Context) error {
 		return c.JSON(http.StatusOK, response)
 	}
 
-	response.Data = map[string]string{
-		"id":    user.ID.Hex(),
+	response.Data = map[string]interface{}{
+		"id":    user.ID,
 		"token": token.Token,
 	}
 

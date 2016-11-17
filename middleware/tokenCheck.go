@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func LoginFilter() echo.MiddlewareFunc {
+func TokenCheck() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) (err error) {
 			req := c.Request()

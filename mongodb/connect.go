@@ -10,12 +10,12 @@ var session *mgo.Session
 
 func GetSession() *mgo.Session {
 	if session == nil {
-		session = Connect()
+		session = connect()
 	}
 	return session
 }
 
-func Connect() *mgo.Session {
+func connect() *mgo.Session {
 
 	session, err := mgo.Dial("mongodb://localhost:27017")
 

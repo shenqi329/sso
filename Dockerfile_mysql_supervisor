@@ -1,0 +1,9 @@
+FROM shenqi329/mysql_supervisor
+
+MAINTAINER shenqi329 <shenqi329@163.com>
+
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+EXPOSE 3306
+
+CMD ["/usr/bin/supervisord"]

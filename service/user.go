@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"gopkg.in/mgo.v2"
 	"sso/bean"
 	"sso/dao"
 	"sso/uuid"
@@ -47,7 +46,7 @@ func GetTokenBean(token string) (*bean.Token, error) {
 	tokenBean, err := dao.GetTokenByToken(token)
 
 	if err != nil {
-		if err == mgo.ErrNotFound {
+		if err == dao.ErrorDaoNotFound {
 			return nil, ErrorServiceNotFound
 		}
 		return nil, ErrorServiceDBError
@@ -62,18 +61,18 @@ func UserLogin(user *bean.User) (*bean.Token, *bean.User, error) {
 		return nil, nil, ErrorServiceParams
 	}
 
-	result, err := dao.GetUserByName(user.Name)
+	userBean, err := dao.GetUserByName(user.Name)
 
 	if err != nil {
 		return nil, nil, err
 	}
 
-	if result == nil {
+	if userBean == nil {
 		return nil, nil, ErrorServiceNotFound
 	}
 
 	token := new(bean.Token)
-	token.UserId = user.ID.Hex()
+	token.UserId = userBean.ID
 	token.Token = uuid.Rand().Hex()
 	token.CreateTime = time.Now()
 
@@ -83,7 +82,7 @@ func UserLogin(user *bean.User) (*bean.Token, *bean.User, error) {
 		return nil, nil, ErrorServiceDBError
 	}
 
-	return token, result, nil
+	return token, userBean, nil
 }
 
 func UserLogout(token string) error {
