@@ -4,11 +4,15 @@ import (
 	"log"
 	"sso/bean"
 	"sso/mysql"
+	"time"
 )
 
 func InsertToken(token *bean.Token) error {
 
 	engine := mysql.GetXormEngine()
+
+	token.CreateTime = time.Now()
+	token.ExpairedTime = time.Now().Add(2 * time.Hour)
 
 	engine.Insert(token)
 

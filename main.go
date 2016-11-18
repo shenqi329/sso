@@ -22,14 +22,13 @@ func main() {
 
 	e.Use(echomiddleware.Logger())
 
-	e.Post("/user/info", controller.UserInfo)
+	e.GET("/user/info", controller.UserInfo)
 	e.POST("/user/register", controller.UserRegister)
 	e.POST("/user/login", controller.UserLogin)
 	e.POST("/user/logout", controller.UserLogout)
 
 	e.GET("/", defaultServer)
 
-	mysql.Connect()
 	mysql.GetXormEngine()
 	e.SetDebug(true)
 	log.Println("sso run on port:8081")

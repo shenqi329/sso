@@ -59,13 +59,13 @@ func InsertUser(user *bean.User) error {
 
 	return nil
 
-	db := mysql.GetDB()
+	// db := mysql.GetDB()
 
-	if err := db.Create(user).Error; err != nil {
-		return ErrorDaoDBInnerFail
-	}
+	// if err := db.Create(user).Error; err != nil {
+	// 	return ErrorDaoDBInnerFail
+	// }
 
-	return nil
+	// return nil
 }
 
 func GetUserById(id int64) (*bean.User, error) {

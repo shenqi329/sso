@@ -117,10 +117,8 @@ func UserRegister(user *bean.User) (*bean.User, error) {
 		log.Println("用户已经存在,username = ", user.Name)
 		return nil, ErrorServiceExist
 	}
-
-	user.CreateTime = time.Now()
-	user.UpdateTime = time.Now()
-
+	log.Print(user.CreateTime)
+	log.Print(user.UpdateTime)
 	err = dao.InsertUser(user)
 
 	if err != nil {

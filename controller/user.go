@@ -34,9 +34,10 @@ func UserInfo(c echo.Context) error {
 		}
 		return c.JSON(http.StatusOK, response)
 	}
-	response.Data = map[string]interface{}{
-		"userId": tokenBean.UserId,
-	}
+	// response.Data = map[string]interface{}{
+	// 	"userId": tokenBean.UserId,
+	// }
+	response.Data = tokenBean
 	return c.JSON(http.StatusOK, response)
 }
 

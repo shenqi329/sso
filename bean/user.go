@@ -11,12 +11,12 @@ const (
 
 type (
 	User struct {
-		ID       int64  `xorm:"'user_id'" json:"id" bson:"_id,omitempty" "gorm:"column:user_id;primary_key"`
-		Name     string `xorm:"'user_username'" json:"name" bson:"name" form:"name" gorm:"column:user_username"`
-		Password string `xorm:"'user_password'" json:"password" bson:"password" form:"password" gorm:"column:user_password"`
+		ID       int64  `xorm:"'t_user_id'" json:"id" bson:"_id,omitempty" gorm:"column:t_user_id;primary_key"`
+		Name     string `xorm:"'t_user_username'" json:"name" bson:"name" form:"name" gorm:"column:t_user_username"`
+		Password string `xorm:"'t_user_password'" json:"password" bson:"password" form:"password" gorm:"column:t_user_password"`
 
-		CreateTime time.Time `xorm:"'user_create_date'" json:"createTime" bson:"createTime" form:"createTime" gorm:"-;column:user_create_date"`
-		UpdateTime time.Time `xorm:"'user_update_date'" json:"updateTime" bson:"updateTime" form:"updateTime" gorm:"-;column:user_update_date"`
+		CreateTime time.Time `xorm:"'t_user_create_time'" json:"createTime" bson:"createTime" form:"createTime" gorm:"column:t_user_create_date"`
+		UpdateTime time.Time `xorm:"'t_user_update_time'" json:"updateTime" bson:"updateTime" form:"updateTime" gorm:"column:t_user_update_time"`
 	}
 
 	UserExist struct {
