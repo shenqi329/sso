@@ -29,7 +29,7 @@ func GetUserBean(name string) (*bean.User, error) {
 	return user, nil //查询
 }
 
-func GetUserBeanById(id string) (*bean.User, error) {
+func GetUserBeanById(id int64) (*bean.User, error) {
 
 	user, err := dao.GetUserById(id)
 
@@ -92,7 +92,7 @@ func UserLogout(token string) error {
 		return ErrorServiceParams
 	}
 
-	err := dao.RemoveTokenByToken(token)
+	_, err := dao.RemoveTokenByToken(token)
 
 	if err != nil {
 		if err == dao.ErrorDaoNotFound {

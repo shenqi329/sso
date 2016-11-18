@@ -1,17 +1,23 @@
 package dao
 
 import (
-	//"log"
+	"log"
 	"sso/bean"
 	"sso/mysql"
 )
 
 func InsertToken(token *bean.Token) error {
 
-	db := mysql.GetDB()
-	db.Save(token)
+	engine := mysql.GetXormEngine()
+
+	engine.Insert(token)
 
 	return nil
+
+	// db := mysql.GetDB()
+	// db.Save(token)
+
+	// return nil
 
 	// session := mongodb.GetSession()
 	// c := session.DB("db_sso").C("t_token")
@@ -31,13 +37,29 @@ func InsertToken(token *bean.Token) error {
 
 func GetTokenByToken(token string) (*bean.Token, error) {
 
-	db := mysql.GetDB()
+	engine := mysql.GetXormEngine()
+	tokenBean := bean.Token{Token: token}
 
-	tokenBean := bean.Token{}
+	has, err := engine.Get(&tokenBean)
 
-	db.Where("token_token = ?", token).First(&tokenBean)
+	if err != nil {
+		log.Println(err.Error())
+		return nil, ErrorDaoDBInnerFail
+	}
+
+	if has == false {
+		return nil, ErrorDaoNotFound
+	}
 
 	return &tokenBean, nil
+
+	// db := mysql.GetDB()
+
+	// tokenBean := bean.Token{}
+
+	// db.Where("token_token = ?", token).First(&tokenBean)
+
+	// return &tokenBean, nil
 	// session := mongodb.GetSession()
 
 	// c := session.DB("db_sso").C("t_token")
@@ -59,13 +81,27 @@ func GetTokenByToken(token string) (*bean.Token, error) {
 	// return &tokenBean, nil
 }
 
-func RemoveTokenByToken(token string) error {
+func RemoveTokenByToken(token string) (int64, error) {
 
-	db := mysql.GetDB()
+	engine := mysql.GetXormEngine()
 
-	db.Where("token_token = ", token).Delete(bean.Token{})
+	tokenBean := bean.Token{Token: token}
 
-	return nil
+	count, err := engine.Delete(&tokenBean)
+
+	log.Println(count)
+	if err != nil {
+		log.Println(err.Error())
+		return count, ErrorDaoDBInnerFail
+	}
+	if count <= 0 {
+		return count, ErrorDaoNotFound
+	}
+	return count, nil
+	// db := mysql.GetDB()
+	// db.Where("token_token = ", token).Delete(bean.Token{})
+
+	// return nil
 	// session := mongodb.GetSession()
 
 	// c := session.DB("db_sso").C("t_token")
