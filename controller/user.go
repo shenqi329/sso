@@ -112,11 +112,13 @@ func UserLogin(c echo.Context) error {
 
 	if err != nil {
 		c.Logger().Debug("error:" + err.Error())
-	}
-
-	if err != nil || user == nil {
-		response.Code = util.StatusResourceNoExist
-		response.Desc = util.StatusText(util.StatusResourceNoExist)
+		if err == service.ErrorServiceNotFound {
+			response.Code = util.StatusResourceNoExist
+			response.Desc = util.StatusText(util.StatusResourceNoExist)
+		} else {
+			response.Code = util.StatusInnerError
+			response.Desc = util.StatusText(util.StatusInnerError)
+		}
 		return c.JSON(http.StatusOK, response)
 	}
 

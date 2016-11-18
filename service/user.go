@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"log"
 	"sso/bean"
 	"sso/dao"
 	"sso/uuid"
@@ -113,10 +114,12 @@ func UserRegister(user *bean.User) (*bean.User, error) {
 		return nil, ErrorServiceNotFound
 	}
 	if result != nil {
+		log.Println("用户已经存在,username = ", user.Name)
 		return nil, ErrorServiceExist
 	}
 
 	user.CreateTime = time.Now()
+	user.UpdateTime = time.Now()
 
 	err = dao.InsertUser(user)
 

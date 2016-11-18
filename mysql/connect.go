@@ -23,6 +23,7 @@ func Connect() *gorm.DB {
 		log.Println(err.Error())
 		return nil
 	}
+	db.LogMode(true)
 
 	return db
 }

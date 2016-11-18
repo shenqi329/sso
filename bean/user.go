@@ -11,12 +11,12 @@ const (
 
 type (
 	User struct {
-		ID       int64  `json:"id" bson:"_id,omitempty" "gorm:"column:user_id"`
+		ID       int64  `json:"id" bson:"_id,omitempty" "gorm:"column:user_id;primary_key"`
 		Name     string `json:"name" bson:"name" form:"name" gorm:"column:user_username"`
 		Password string `json:"password" bson:"password" form:"password" gorm:"column:user_password"`
 
-		CreateTime time.Time `json:"createTime" bson:"createTime" form:"createTime" gorm:"column:user_create_date"`
-		UpdateTime time.Time `json:"createTime" bson:"createTime" form:"createTime" gorm:"column:user_update_date"`
+		CreateTime time.Time `json:"createTime" bson:"createTime" form:"createTime" gorm:"-"`
+		UpdateTime time.Time `json:"updateTime" bson:"updateTime" form:"updateTime" gorm:"-"`
 	}
 
 	UserExist struct {

@@ -1,9 +1,7 @@
 package dao
 
 import (
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
-	"log"
+	//"log"
 	"sso/bean"
 	"sso/mysql"
 )
@@ -67,6 +65,7 @@ func RemoveTokenByToken(token string) error {
 
 	db.Where("token_token = ", token).Delete(bean.Token{})
 
+	return nil
 	// session := mongodb.GetSession()
 
 	// c := session.DB("db_sso").C("t_token")
