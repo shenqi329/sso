@@ -47,7 +47,7 @@ func RemoveToken(token *bean.Token) (int64, error) {
 
 	engine := mysql.GetXormEngine()
 
-	count, err := engine.Delete(&token)
+	count, err := engine.Delete(token)
 
 	return count, err
 }
