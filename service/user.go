@@ -2,7 +2,7 @@ package service
 
 import (
 	"errors"
-	"log"
+	//"log"
 	"sso/bean"
 	"sso/dao"
 	"sso/uuid"
@@ -10,95 +10,79 @@ import (
 )
 
 var (
-	ErrorServiceParams   = errors.New("参数错误")
-	ErrorServiceExist    = errors.New("资源已存在")
-	ErrorServiceDBError  = errors.New("数据库异常")
-	ErrorServiceNotFound = errors.New("数据未找到")
+	ErrorParams            = errors.New("parameter error")
+	ErrorResourceExists    = errors.New("resource already exists")
+	ErrorNotFound          = errors.New("resource doesn't exist")
+	ErrorDatabaseOperation = errors.New("database operation")
 )
 
-func GetUserBean(name string) (*bean.User, error) {
+func UserInfo(token string) (*bean.User, error) {
 
-	user, err := dao.GetUserByName(name)
+	if len(token) <= 0 {
+		return nil, ErrorParams
+	}
+
+	tokenBean := &bean.Token{Token: token}
+	userBean := &bean.User{}
+
+	has, err := dao.GetToken(tokenBean)
+
+	if has {
+		has, err = dao.GetUser(userBean)
+	}
 
 	if err != nil {
-		if err == dao.ErrorDaoNotFound {
-			return nil, ErrorServiceNotFound //说明没有查询到，用户不存在
-		}
-		return nil, ErrorServiceDBError //查询发生错误
+		return nil, ErrorDatabaseOperation
 	}
-	return user, nil //查询
+
+	if !has {
+		return nil, ErrorNotFound
+	}
+
+	return userBean, nil
 }
 
-func GetUserBeanById(id int64) (*bean.User, error) {
+func UserLogin(user *bean.User, token *bean.Token) (*bean.User, *bean.Token, error) {
 
-	user, err := dao.GetUserById(id)
-
-	if err != nil {
-		if err == dao.ErrorDaoNotFound {
-			return nil, ErrorServiceNotFound //说明没有查询到，用户不存在
-		}
-		return nil, ErrorServiceDBError //查询发生错误
-	}
-	return user, nil //查询
-}
-
-func GetTokenBean(token string) (*bean.Token, error) {
-
-	tokenBean, err := dao.GetTokenByToken(token)
-
-	if err != nil {
-		if err == dao.ErrorDaoNotFound {
-			return nil, ErrorServiceNotFound
-		}
-		return nil, ErrorServiceDBError
-	}
-
-	return tokenBean, nil
-}
-
-func UserLogin(user *bean.User) (*bean.Token, *bean.User, error) {
-
-	if len(user.Name) == 0 || len(user.Password) == 0 {
-		return nil, nil, ErrorServiceParams
-	}
-
-	userBean, err := dao.GetUserByName(user.Name)
+	has, err := dao.GetUser(user)
 
 	if err != nil {
 		return nil, nil, err
 	}
-
-	if userBean == nil {
-		return nil, nil, ErrorServiceNotFound
+	if has == false {
+		return nil, nil, ErrorNotFound
 	}
 
-	token := new(bean.Token)
-	token.UserId = userBean.ID
-	token.Token = uuid.Rand().Hex()
-	token.CreateTime = time.Now()
+	tokenBean := &bean.Token{
+		AppId:        token.AppId,
+		DeviceId:     token.DeviceId,
+		Platform:     token.Platform,
+		UserId:       user.ID,
+		Token:        uuid.Rand().Hex(),
+		ExpairedTime: time.Now().Add(2 * time.Hour),
+		CreateTime:   time.Now(),
+	}
 
-	dao.InsertToken(token)
-
+	err = dao.InsertToken(tokenBean)
 	if err != nil {
-		return nil, nil, ErrorServiceDBError
+		return nil, nil, ErrorDatabaseOperation
 	}
 
-	return token, userBean, nil
+	dao.UpdateUser(&bean.User{ID: user.ID, LastLoginDate: time.Now()})
+
+	return user, tokenBean, nil
 }
 
 func UserLogout(token string) error {
 
-	if len(token) == 0 {
-		return ErrorServiceParams
+	if len(token) <= 0 {
+		return ErrorParams
 	}
 
-	_, err := dao.RemoveTokenByToken(token)
+	_, err := dao.RemoveToken(&bean.Token{Token: token})
 
 	if err != nil {
-		if err == dao.ErrorDaoNotFound {
-			return ErrorServiceNotFound
-		}
-		return ErrorServiceDBError
+		return ErrorDatabaseOperation
 	}
 
 	return nil
@@ -106,23 +90,28 @@ func UserLogout(token string) error {
 
 func UserRegister(user *bean.User) (*bean.User, error) {
 
-	if len(user.Name) == 0 || len(user.Password) == 0 {
-		return nil, ErrorServiceParams
+	if len(user.UserName) == 0 || len(user.Password) == 0 {
+		return nil, ErrorParams
 	}
-	result, err := dao.GetUserByName(user.Name)
-	if err != nil && err != dao.ErrorDaoNotFound {
-		return nil, ErrorServiceNotFound
-	}
-	if result != nil {
-		log.Println("用户已经存在,username = ", user.Name)
-		return nil, ErrorServiceExist
-	}
-	log.Print(user.CreateTime)
-	log.Print(user.UpdateTime)
-	err = dao.InsertUser(user)
+
+	has, err := dao.GetUser(user)
 
 	if err != nil {
-		return nil, ErrorServiceDBError
+		return nil, ErrorDatabaseOperation
+	}
+
+	if has {
+
+		return nil, ErrorResourceExists
+	}
+
+	user.CreateTime = time.Now()
+	user.UpdateTime = time.Now()
+
+	_, err = dao.InsertUser(user)
+
+	if err != nil {
+		return nil, ErrorDatabaseOperation
 	}
 
 	return user, nil
