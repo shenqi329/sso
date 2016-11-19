@@ -68,7 +68,8 @@ func UserLogin(user *bean.User, token *bean.Token) (*bean.User, *bean.Token, err
 		return nil, nil, ErrorDatabaseOperation
 	}
 
-	dao.UpdateUser(&bean.User{ID: user.ID, LastLoginDate: time.Now()})
+	lastLoginDate := time.Now()
+	dao.UpdateUser(&bean.User{ID: user.ID, LastLoginDate: &lastLoginDate})
 
 	return user, tokenBean, nil
 }
@@ -94,8 +95,7 @@ func UserRegister(user *bean.User) (*bean.User, error) {
 		return nil, ErrorParams
 	}
 
-	has, err := dao.GetUser(user)
-
+	has, err := dao.GetUser(&bean.User{UserName: user.UserName})
 	if err != nil {
 		return nil, ErrorDatabaseOperation
 	}
