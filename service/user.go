@@ -11,7 +11,7 @@ import (
 
 var (
 	ErrorParams            = errors.New("parameter error")
-	ErrorResourceExists    = errors.New("resource already exists")
+	ErrorResourceExist     = errors.New("resource already exist")
 	ErrorNotFound          = errors.New("resource doesn't exist")
 	ErrorDatabaseOperation = errors.New("database operation")
 )
@@ -53,14 +53,16 @@ func UserLogin(user *bean.User, token *bean.Token) (*bean.User, *bean.Token, err
 		return nil, nil, ErrorNotFound
 	}
 
+	createTime := time.Now()
+	expiredTime := createTime.Add(2 * time.Hour)
 	tokenBean := &bean.Token{
-		AppId:        token.AppId,
-		DeviceId:     token.DeviceId,
-		Platform:     token.Platform,
-		UserId:       user.ID,
-		Token:        uuid.Rand().Hex(),
-		ExpairedTime: time.Now().Add(2 * time.Hour),
-		CreateTime:   time.Now(),
+		AppId:       token.AppId,
+		DeviceId:    token.DeviceId,
+		Platform:    token.Platform,
+		UserId:      user.ID,
+		Token:       uuid.Rand().Hex(),
+		ExpiredTime: &expiredTime,
+		CreateTime:  &createTime,
 	}
 
 	err = dao.InsertToken(tokenBean)
@@ -80,10 +82,13 @@ func UserLogout(token string) error {
 		return ErrorParams
 	}
 
-	_, err := dao.RemoveToken(&bean.Token{Token: token})
+	count, err := dao.RemoveToken(&bean.Token{Token: token})
 
 	if err != nil {
 		return ErrorDatabaseOperation
+	}
+	if count <= 0 {
+		return ErrorNotFound
 	}
 
 	return nil
@@ -102,11 +107,13 @@ func UserRegister(user *bean.User) (*bean.User, error) {
 
 	if has {
 
-		return nil, ErrorResourceExists
+		return nil, ErrorResourceExist
 	}
 
-	user.CreateTime = time.Now()
-	user.UpdateTime = time.Now()
+	timeNow := time.Now()
+
+	user.CreateTime = &timeNow
+	user.UpdateTime = &timeNow
 
 	_, err = dao.InsertUser(user)
 

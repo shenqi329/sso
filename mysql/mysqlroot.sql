@@ -18,17 +18,13 @@ SHOW VARIABLES LIKE 'event_scheduler';
 SET GLOBAL event_scheduler = ON;
 SET GLOBAL event_scheduler = ON;
 
-show EVENTS;
 
-delimiter $$  
-drop event if exists e_wom_stat;  
-create event e_wom_stat  
-on schedule   
-EVERY 1 minute  
- STARTS '2013-01-01 03:00:00'  
-ON COMPLETION  PRESERVE ENABLE  
-do  
-begin  
-  delete from t_wom_random_num where time<(CURRENT_TIMESTAMP()+INTERVAL -25 MINUTE);  
-end $$  
-delimiter ;  
+CREATE DATABASE IF NOT EXISTS db_easynote DEFAULT CHARSET utf8 COLLATE utf8_general_ci;
+
+grant select on db_easynote.* to easynote_select@`%` identified by 'easynote_select';
+
+grant select,update on db_easynote.* to easynote_update@`%` identified by 'easynote_update';
+
+grant select,update,delete,insert on db_easynote.* to easynote_connect@`%` identified by 'easynote_connect';
+
+grant all privileges on db_easynote.* to easynote_dba@`%` identified by 'easynote_dba';

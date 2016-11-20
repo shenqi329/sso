@@ -24,6 +24,8 @@ CREATE TABLE `t_user` (
   UNIQUE KEY `t_user_username` (`t_user_username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='用户表';
 
+alter table db_sso.t_token change `t_user_email` `t_user_email` varchar(200) DEFAULT NULL COMMENT '邮箱';
+
 drop table `t_token`;
 
 CREATE TABLE `t_token` (

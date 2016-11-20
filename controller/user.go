@@ -9,6 +9,43 @@ import (
 	"sso/util"
 )
 
+func UserRegisetrEMailVerifyCode(c echo.Context) error {
+
+	user := new(bean.User)
+	response := bean.Response{Code: util.StatusOK, Desc: util.StatusText(util.StatusOK)}
+
+	if err := c.Bind(user); err != nil {
+		response.Code = util.StatusIllegalParam
+		response.Desc = util.StatusText(util.StatusIllegalParam)
+		log.Println(err.Error())
+		return c.JSON(http.StatusOK, response)
+	}
+
+	log.Println(bean.StructToJsonString(user))
+
+	if len(user.UserName) == 0 || len(user.Email) == 0 {
+		response.Code = util.StatusIllegalParam
+		response.Desc = util.StatusText(util.StatusIllegalParam)
+		return c.JSON(http.StatusOK, response)
+	}
+
+	err := service.UserRegisetrEMailVerifyCode(user)
+
+	if err != nil {
+		if err == service.ErrorDatabaseOperation {
+			response.Code = util.StatusIllegalParam
+			response.Desc = util.StatusText(util.StatusInnerError)
+
+		} else if err == service.ErrorResourceExist {
+			response.Code = util.StatusResourceExist
+			response.Desc = util.StatusText(util.StatusResourceExist)
+		}
+		return c.JSON(http.StatusOK, response)
+	}
+
+	return c.JSON(http.StatusOK, response)
+}
+
 func UserInfo(c echo.Context) error {
 
 	token := c.Request().Header().Get("token")
@@ -56,7 +93,7 @@ func UserRegister(c echo.Context) error {
 	user, err := service.UserRegister(user)
 
 	if err != nil {
-		if err == service.ErrorResourceExists {
+		if err == service.ErrorResourceExist {
 			response.Code = util.StatusResourceExist
 			response.Desc = util.StatusText(util.StatusResourceExist)
 		} else {
