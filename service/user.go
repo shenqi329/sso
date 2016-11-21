@@ -5,6 +5,7 @@ import (
 	"log"
 	"sso/bean"
 	"sso/dao"
+	ssoerror "sso/error"
 	"sso/uuid"
 	"time"
 )
@@ -19,6 +20,7 @@ var (
 func UserInfo(token string) (*bean.User, error) {
 
 	if len(token) <= 0 {
+		return nil, ssoerror.ErrorIllegalParams
 		return nil, ErrorParams
 	}
 
@@ -32,10 +34,12 @@ func UserInfo(token string) (*bean.User, error) {
 	}
 
 	if err != nil {
+		return nil, ssoerror.ErrorInternalServerError
 		return nil, ErrorDatabaseOperation
 	}
 
 	if !has {
+		return nil, ssoerror.ErrorNotFound
 		return nil, ErrorNotFound
 	}
 
@@ -47,9 +51,11 @@ func UserLogin(user *bean.User, token *bean.Token) (*bean.User, *bean.Token, err
 	has, err := dao.GetUser(user)
 
 	if err != nil {
+		return nil, nil, ssoerror.ErrorInternalServerError
 		return nil, nil, err
 	}
 	if has == false {
+		return nil, nil, ssoerror.ErrorNotFound
 		return nil, nil, ErrorNotFound
 	}
 
@@ -68,6 +74,7 @@ func UserLogin(user *bean.User, token *bean.Token) (*bean.User, *bean.Token, err
 	err = dao.InsertToken(tokenBean)
 	if err != nil {
 		log.Println(err.Error())
+		return nil, nil, ssoerror.ErrorInternalServerError
 		return nil, nil, ErrorDatabaseOperation
 	}
 
@@ -86,9 +93,11 @@ func UserLogout(token string) error {
 	count, err := dao.RemoveToken(&bean.Token{Token: token})
 
 	if err != nil {
+		return nil, nil, ssoerror.ErrorInternalServerError
 		return ErrorDatabaseOperation
 	}
 	if count <= 0 {
+		return nil, nil, ssoerror.ErrorNotFound
 		return ErrorNotFound
 	}
 
@@ -98,24 +107,29 @@ func UserLogout(token string) error {
 func UserRegister(user *bean.User, email *bean.Email) (*bean.User, error) {
 
 	if len(user.UserName) == 0 || len(user.Password) == 0 {
+		return nil, ssoerror.ErrorIllegalParams
 		return nil, ErrorParams
 	}
 
 	has, err := dao.GetUser(&bean.User{UserName: user.UserName})
 	if err != nil {
+		return nil, ssoerror.ErrorInternalServerError
 		return nil, ErrorDatabaseOperation
 	}
 	if has {
+		return nil, ssoerror.ErrorResourceExist
 		return nil, ErrorResourceExist
 	}
 
 	has, err = dao.GetEmail(&bean.Email{Email: email.Email, UserName: email.UserName, Code: email.Code})
 	if err != nil {
+		return nil, ssoerror.ErrorInternalServerError
 		return nil, ErrorDatabaseOperation
 	}
 
 	if !has {
 		log.Println("验证码错误")
+		return nil, ssoerror.ErrorRegisterErrorCode
 		return nil, ErrorDatabaseOperation
 	}
 
@@ -127,6 +141,7 @@ func UserRegister(user *bean.User, email *bean.Email) (*bean.User, error) {
 	_, err = dao.InsertUser(user)
 
 	if err != nil {
+		return nil, ssoerror.ErrorInternalServerError
 		return nil, ErrorDatabaseOperation
 	}
 

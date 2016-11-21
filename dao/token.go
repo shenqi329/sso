@@ -1,7 +1,7 @@
 package dao
 
 import (
-	//"log"
+	"log"
 	"sso/bean"
 	"sso/mysql"
 )
@@ -22,6 +22,7 @@ func InsertToken(token *bean.Token) error {
 	_, err = engine.Insert(token)
 
 	if err != nil {
+		log.Println(err.Error())
 		session.Rollback()
 		return err
 	}
@@ -29,6 +30,7 @@ func InsertToken(token *bean.Token) error {
 	err = session.Commit()
 
 	if err != nil {
+		log.Println(err.Error())
 		return err
 	}
 
@@ -48,6 +50,9 @@ func RemoveToken(token *bean.Token) (int64, error) {
 	engine := mysql.GetXormEngine()
 
 	count, err := engine.Delete(token)
+	if err != nil {
+		log.Println(err.Error())
+	}
 
 	return count, err
 }
