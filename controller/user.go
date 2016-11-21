@@ -18,6 +18,7 @@ func UserRegisetrEMailVerifyCode(c echo.Context) error {
 		response.Code = util.CommonIllegalParam
 		response.Desc = util.StatusText(util.CommonIllegalParam)
 		log.Println(err.Error())
+		return ControllerHandleError(err)
 		return c.JSON(http.StatusOK, response)
 	}
 

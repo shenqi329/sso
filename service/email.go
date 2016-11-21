@@ -7,6 +7,7 @@ import (
 	"net/smtp"
 	"sso/bean"
 	"sso/dao"
+	ssoerror "sso/error"
 	"strings"
 	"time"
 )
@@ -31,18 +32,18 @@ func UserRegisetrEMailVerifyCode(user *bean.User) error {
 	has, err := dao.GetUser(&bean.User{UserName: user.UserName})
 
 	if err != nil {
-		return ErrorDatabaseOperation
+		return ssoerror.ErrorInternalServerError
 	}
 	if has {
-		return ErrorResourceExist
+		return ssoerror.ErrorResourceExist
 	}
 
 	has, err = dao.GetUser(&bean.User{Email: user.Email})
 	if err != nil {
-		return ErrorDatabaseOperation
+		return ssoerror.ErrorInternalServerError
 	}
 	if has {
-		return ErrorResourceExist
+		return ssoerror.ErrorResourceExist
 	}
 
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -57,10 +58,10 @@ func UserRegisetrEMailVerifyCode(user *bean.User) error {
 	}
 	count, err := dao.InsertEmail(&emailBean)
 	if err != nil {
-		return ErrorDatabaseOperation
+		return ssoerror.ErrorInternalServerError
 	}
 	if count <= 0 {
-		return ErrorDatabaseOperation
+		return ssoerror.ErrorInternalServerError
 	}
 
 	emailToSend := newEmail(user.Email, "验证码", fmt.Sprintf("注册easynote的验证码为:%s,10分钟内有效", emailCode))
