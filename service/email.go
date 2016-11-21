@@ -51,6 +51,7 @@ func UserRegisetrEMailVerifyCode(user *bean.User) error {
 	expiredTime := time.Now().Add(10 * time.Minute)
 	emailBean := bean.Email{
 		UserName:    user.UserName,
+		Email:       user.Email,
 		Code:        emailCode,
 		ExpiredTime: &expiredTime,
 	}

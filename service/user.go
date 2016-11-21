@@ -2,7 +2,7 @@ package service
 
 import (
 	"errors"
-	//"log"
+	"log"
 	"sso/bean"
 	"sso/dao"
 	"sso/uuid"
@@ -67,6 +67,7 @@ func UserLogin(user *bean.User, token *bean.Token) (*bean.User, *bean.Token, err
 
 	err = dao.InsertToken(tokenBean)
 	if err != nil {
+		log.Println(err.Error())
 		return nil, nil, ErrorDatabaseOperation
 	}
 
@@ -94,7 +95,7 @@ func UserLogout(token string) error {
 	return nil
 }
 
-func UserRegister(user *bean.User) (*bean.User, error) {
+func UserRegister(user *bean.User, email *bean.Email) (*bean.User, error) {
 
 	if len(user.UserName) == 0 || len(user.Password) == 0 {
 		return nil, ErrorParams
@@ -104,16 +105,24 @@ func UserRegister(user *bean.User) (*bean.User, error) {
 	if err != nil {
 		return nil, ErrorDatabaseOperation
 	}
-
 	if has {
-
 		return nil, ErrorResourceExist
 	}
 
-	timeNow := time.Now()
+	has, err = dao.GetEmail(&bean.Email{Email: email.Email, UserName: email.UserName, Code: email.Code})
+	if err != nil {
+		return nil, ErrorDatabaseOperation
+	}
 
+	if !has {
+		log.Println("验证码错误")
+		return nil, ErrorDatabaseOperation
+	}
+
+	timeNow := time.Now()
 	user.CreateTime = &timeNow
 	user.UpdateTime = &timeNow
+	user.IsEmailConfirmed = true
 
 	_, err = dao.InsertUser(user)
 

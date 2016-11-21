@@ -12,11 +12,11 @@ import (
 func UserRegisetrEMailVerifyCode(c echo.Context) error {
 
 	user := new(bean.User)
-	response := bean.Response{Code: util.StatusOK, Desc: util.StatusText(util.StatusOK)}
+	response := bean.Response{Code: util.CommonSuccess, Desc: util.StatusText(util.CommonSuccess)}
 
 	if err := c.Bind(user); err != nil {
-		response.Code = util.StatusIllegalParam
-		response.Desc = util.StatusText(util.StatusIllegalParam)
+		response.Code = util.CommonIllegalParam
+		response.Desc = util.StatusText(util.CommonIllegalParam)
 		log.Println(err.Error())
 		return c.JSON(http.StatusOK, response)
 	}
@@ -24,8 +24,8 @@ func UserRegisetrEMailVerifyCode(c echo.Context) error {
 	log.Println(bean.StructToJsonString(user))
 
 	if len(user.UserName) == 0 || len(user.Email) == 0 {
-		response.Code = util.StatusIllegalParam
-		response.Desc = util.StatusText(util.StatusIllegalParam)
+		response.Code = util.CommonIllegalParam
+		response.Desc = util.StatusText(util.CommonIllegalParam)
 		return c.JSON(http.StatusOK, response)
 	}
 
@@ -33,12 +33,13 @@ func UserRegisetrEMailVerifyCode(c echo.Context) error {
 
 	if err != nil {
 		if err == service.ErrorDatabaseOperation {
-			response.Code = util.StatusIllegalParam
-			response.Desc = util.StatusText(util.StatusInnerError)
-
+			response.Code = util.CommonIllegalParam
+			response.Desc = util.StatusText(util.CommonInternalServerError)
+			log.Println(err.Error())
 		} else if err == service.ErrorResourceExist {
-			response.Code = util.StatusResourceExist
-			response.Desc = util.StatusText(util.StatusResourceExist)
+			response.Code = util.CommonResourceExist
+			response.Desc = util.StatusText(util.CommonResourceExist)
+			log.Println(err.Error())
 		}
 		return c.JSON(http.StatusOK, response)
 	}
@@ -50,20 +51,20 @@ func UserInfo(c echo.Context) error {
 
 	token := c.Request().Header().Get("token")
 
-	response := bean.Response{Code: util.StatusOK, Desc: util.StatusText(util.StatusOK)}
+	response := bean.Response{Code: util.CommonSuccess, Desc: util.StatusText(util.CommonSuccess)}
 
 	userBean, err := service.UserInfo(token)
 
 	if err != nil {
 		if err == service.ErrorNotFound {
-			response.Code = util.StatusResourceNoExist
-			response.Desc = util.StatusText(util.StatusResourceNoExist)
+			response.Code = util.CommonResourceNoExist
+			response.Desc = util.StatusText(util.CommonResourceNoExist)
 		} else if err == service.ErrorParams {
-			response.Code = util.StatusIllegalParam
-			response.Desc = util.StatusText(util.StatusIllegalParam)
+			response.Code = util.CommonIllegalParam
+			response.Desc = util.StatusText(util.CommonIllegalParam)
 		} else {
-			response.Code = util.StatusInnerError
-			response.Desc = util.StatusText(util.StatusInnerError)
+			response.Code = util.CommonInternalServerError
+			response.Desc = util.StatusText(util.CommonInternalServerError)
 		}
 	} else {
 		userBean.Password = ""
@@ -77,28 +78,47 @@ func UserInfo(c echo.Context) error {
 
 func UserRegister(c echo.Context) error {
 	user := new(bean.User)
-	response := bean.Response{Code: util.StatusOK, Desc: util.StatusText(util.StatusOK)}
+	email := new(bean.Email)
 
-	if error := c.Bind(user); error != nil {
-		response.Code = util.StatusIllegalParam
-		response.Desc = util.StatusText(util.StatusIllegalParam)
+	response := bean.Response{Code: util.CommonSuccess, Desc: util.StatusText(util.CommonSuccess)}
+
+	if err := c.Bind(user); err != nil {
+		response.Code = util.CommonIllegalParam
+		response.Desc = util.StatusText(util.CommonIllegalParam)
 		return c.JSON(http.StatusOK, response)
 	}
-	if len(user.UserName) == 0 || len(user.Password) == 0 {
-		response.Code = util.StatusIllegalParam
-		response.Desc = util.StatusText(util.StatusIllegalParam)
+	if len(user.UserName) == 0 ||
+		len(user.Password) == 0 ||
+		len(user.Email) == 0 {
+		response.Code = util.CommonIllegalParam
+		response.Desc = util.StatusText(util.CommonIllegalParam)
 		return c.JSON(http.StatusOK, response)
 	}
 
-	user, err := service.UserRegister(user)
+	if err := c.Bind(email); err != nil {
+		response.Code = util.CommonIllegalParam
+		response.Desc = util.StatusText(util.CommonIllegalParam)
+		return c.JSON(http.StatusOK, response)
+	}
+	if len(email.UserName) == 0 ||
+		len(email.Email) == 0 ||
+		len(email.Code) == 0 {
+		response.Code = util.CommonIllegalParam
+		response.Desc = util.StatusText(util.CommonIllegalParam)
+		return c.JSON(http.StatusOK, response)
+	}
+
+	log.Println(bean.StructToJsonString(email))
+
+	user, err := service.UserRegister(user, email)
 
 	if err != nil {
 		if err == service.ErrorResourceExist {
-			response.Code = util.StatusResourceExist
-			response.Desc = util.StatusText(util.StatusResourceExist)
+			response.Code = util.CommonResourceExist
+			response.Desc = util.StatusText(util.CommonResourceExist)
 		} else {
-			response.Code = util.StatusInnerError
-			response.Desc = util.StatusText(util.StatusInnerError)
+			response.Code = util.CommonInternalServerError
+			response.Desc = util.StatusText(util.CommonInternalServerError)
 		}
 		return c.JSON(http.StatusOK, response)
 	}
@@ -109,22 +129,22 @@ func UserRegister(c echo.Context) error {
 func UserLogout(c echo.Context) error {
 
 	token := c.Request().Header().Get("token")
-	response := bean.Response{Code: util.StatusOK, Desc: util.StatusText(util.StatusOK)}
+	response := bean.Response{Code: util.CommonSuccess, Desc: util.StatusText(util.CommonSuccess)}
 
 	if len(token) == 0 {
-		response.Code = util.StatusIllegalParam
-		response.Desc = util.StatusText(util.StatusIllegalParam)
+		response.Code = util.CommonIllegalParam
+		response.Desc = util.StatusText(util.CommonIllegalParam)
 		return c.JSON(http.StatusOK, response)
 	}
 
 	err := service.UserLogout(token)
 	if err != nil {
 		if err == service.ErrorNotFound {
-			response.Code = util.StatusResourceNoExist
-			response.Desc = util.StatusText(util.StatusResourceNoExist)
+			response.Code = util.CommonResourceNoExist
+			response.Desc = util.StatusText(util.CommonResourceNoExist)
 		} else {
-			response.Code = util.StatusInnerError
-			response.Desc = util.StatusText(util.StatusInnerError)
+			response.Code = util.CommonInternalServerError
+			response.Desc = util.StatusText(util.CommonInternalServerError)
 		}
 		return c.JSON(http.StatusOK, response)
 	}
@@ -137,28 +157,28 @@ func UserLogin(c echo.Context) error {
 	userBean := &bean.User{}
 	tokenBean := &bean.Token{}
 
-	response := bean.Response{Code: util.StatusOK, Desc: util.StatusText(util.StatusOK)}
+	response := bean.Response{Code: util.CommonSuccess, Desc: util.StatusText(util.CommonSuccess)}
 
 	//检测用户信息
 	if err := c.Bind(userBean); err != nil {
 		log.Println("获取用户信息失败")
-		response.Code = util.StatusIllegalParam
-		response.Desc = util.StatusText(util.StatusIllegalParam)
+		response.Code = util.CommonIllegalParam
+		response.Desc = util.StatusText(util.CommonIllegalParam)
 		return c.JSON(http.StatusOK, response)
 	}
 	if len(userBean.UserName) <= 0 ||
 		len(userBean.Password) <= 0 {
 		log.Println("获取用户信息失败")
-		response.Code = util.StatusIllegalParam
-		response.Desc = util.StatusText(util.StatusIllegalParam)
+		response.Code = util.CommonIllegalParam
+		response.Desc = util.StatusText(util.CommonIllegalParam)
 		return c.JSON(http.StatusOK, response)
 	}
 
 	//检查授权信息
 	if err := c.Bind(tokenBean); err != nil {
 		log.Println("获取授权信息失败")
-		response.Code = util.StatusIllegalParam
-		response.Desc = util.StatusText(util.StatusIllegalParam)
+		response.Code = util.CommonIllegalParam
+		response.Desc = util.StatusText(util.CommonIllegalParam)
 		return c.JSON(http.StatusOK, response)
 	}
 
@@ -166,8 +186,8 @@ func UserLogin(c echo.Context) error {
 		len(tokenBean.AppId) <= 0 ||
 		len(tokenBean.Platform) <= 0 {
 		log.Println("获取授权信息失败")
-		response.Code = util.StatusIllegalParam
-		response.Desc = util.StatusText(util.StatusIllegalParam)
+		response.Code = util.CommonIllegalParam
+		response.Desc = util.StatusText(util.CommonIllegalParam)
 		return c.JSON(http.StatusOK, response)
 	}
 
@@ -175,11 +195,11 @@ func UserLogin(c echo.Context) error {
 	if err != nil {
 		c.Logger().Debug("error:" + err.Error())
 		if err == service.ErrorNotFound {
-			response.Code = util.StatusResourceNoExist
-			response.Desc = util.StatusText(util.StatusResourceNoExist)
+			response.Code = util.CommonResourceNoExist
+			response.Desc = util.StatusText(util.CommonResourceNoExist)
 		} else {
-			response.Code = util.StatusInnerError
-			response.Desc = util.StatusText(util.StatusInnerError)
+			response.Code = util.CommonInternalServerError
+			response.Desc = util.StatusText(util.CommonInternalServerError)
 		}
 		return c.JSON(http.StatusOK, response)
 	}

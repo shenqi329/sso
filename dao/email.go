@@ -13,3 +13,11 @@ func InsertEmail(token *bean.Email) (int64, error) {
 
 	return count, err
 }
+
+func GetEmail(email *bean.Email) (bool, error) {
+	engine := mysql.GetXormEngine()
+
+	has, err := engine.Get(email)
+
+	return has, err
+}

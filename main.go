@@ -32,6 +32,6 @@ func main() {
 
 	mysql.GetXormEngine()
 	e.SetDebug(true)
-	log.Println("sso run on port:8087")
-	e.Run(standard.New(":8087"))
+	log.Println("sso run on port:8081")
+	e.Run(standard.New(":8081"))
 }
