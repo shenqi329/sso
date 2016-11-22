@@ -13,8 +13,10 @@ var (
 	ErrorInternalServerError = NEWError(CommonInternalServerError)
 
 	//注册
-	ErrorRegisterEmailInUse = NEWError(RegisterEmailInUse)
-	ErrorRegisterErrorCode  = NEWError(RegisterErrorCode)
+	ErrorRegisterEmailInUse  = NEWError(RegisterEmailInUse)
+	ErrorRegisterEmailFormat = NEWError(RegisterEmailFormatError)
+	ErrorRegisterErrorCode   = NEWError(RegisterErrorCode)
+	ErrorRegisterUserExist   = NEWError(RegisterUserExist)
 )
 
 const (
@@ -26,8 +28,10 @@ const (
 	CommonInternalServerError = "00000005"
 
 	//注册
-	RegisterEmailInUse = "00001001"
-	RegisterErrorCode  = "00001002"
+	RegisterEmailInUse       = "00001001"
+	RegisterEmailFormatError = "00001002"
+	RegisterErrorCode        = "00001003"
+	RegisterUserExist        = "00001004"
 )
 
 var codeText = map[string]string{
@@ -39,8 +43,10 @@ var codeText = map[string]string{
 	CommonInternalServerError: "internal server error",
 
 	//注册
-	RegisterEmailInUse: "the email address is currently in use",
-	RegisterErrorCode:  "error verify code",
+	RegisterEmailInUse:       "the email address is currently in use",
+	RegisterEmailFormatError: "the email format error",
+	RegisterErrorCode:        "error verify code",
+	RegisterUserExist:        "user already exists",
 }
 
 func ErrorCodeToText(code string) string {

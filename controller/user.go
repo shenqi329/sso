@@ -4,6 +4,7 @@ import (
 	"github.com/labstack/echo"
 	"log"
 	"net/http"
+	"regexp"
 	"sso/bean"
 	ssoerror "sso/error"
 	"sso/service"
@@ -17,11 +18,19 @@ func UserRegisetrEMailVerifyCode(c echo.Context) error {
 		return ControllerHandleError(c, ssoerror.ErrorIllegalParams)
 	}
 	log.Println(bean.StructToJsonString(user))
+
 	if len(user.UserName) == 0 || len(user.Email) == 0 {
 		return ControllerHandleError(c, ssoerror.ErrorIllegalParams)
 	}
 
-	err := service.UserRegisetrEMailVerifyCode(user)
+	pattern := `\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*`
+	regexp.MustCompile(pattern)
+	match, err := regexp.MatchString(pattern, user.Email)
+	if !match || err != nil {
+		return ControllerHandleError(c, ssoerror.ErrorRegisterEmailFormat)
+	}
+
+	err = service.UserRegisetrEMailVerifyCode(user)
 	if err != nil {
 		return ControllerHandleError(c, err)
 	}

@@ -106,7 +106,7 @@ func UserRegister(user *bean.User, email *bean.Email) (*bean.User, error) {
 		return nil, ssoerror.ErrorInternalServerError
 	}
 	if has {
-		return nil, ssoerror.ErrorResourceExist
+		return nil, ssoerror.ErrorRegisterUserExist
 	}
 
 	has, err = dao.GetEmail(&bean.Email{Email: email.Email, UserName: email.UserName, Code: email.Code})
@@ -115,7 +115,6 @@ func UserRegister(user *bean.User, email *bean.Email) (*bean.User, error) {
 	}
 
 	if !has {
-		log.Println("验证码错误")
 		return nil, ssoerror.ErrorRegisterErrorCode
 	}
 

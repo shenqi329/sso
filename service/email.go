@@ -35,7 +35,7 @@ func UserRegisetrEMailVerifyCode(user *bean.User) error {
 		return ssoerror.ErrorInternalServerError
 	}
 	if has {
-		return ssoerror.ErrorResourceExist
+		return ssoerror.ErrorRegisterUserExist
 	}
 
 	has, err = dao.GetUser(&bean.User{Email: user.Email})
@@ -43,7 +43,7 @@ func UserRegisetrEMailVerifyCode(user *bean.User) error {
 		return ssoerror.ErrorInternalServerError
 	}
 	if has {
-		return ssoerror.ErrorResourceExist
+		return ssoerror.ErrorRegisterEmailInUse
 	}
 
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
