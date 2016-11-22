@@ -51,7 +51,6 @@ type (
 	SSOError struct {
 		Code string
 		Desc string
-		Err  *error
 	}
 )
 
@@ -59,14 +58,7 @@ func NEWError(code string) *SSOError {
 	return &SSOError{Code: code, Desc: ErrorCodeToText(code)}
 }
 
-func NEWErrorWithError(code string, err *error) *SSOError {
-	return &SSOError{Code: code, Desc: ErrorCodeToText(code), Err: err}
-}
-
 func (err *SSOError) Error() string {
 	errString := fmt.Sprintf("code = %s,desc = %s", err.Code, err.Desc)
-	if err != nil {
-		errString = fmt.Sprintf("%s,error = %s", err.Error())
-	}
 	return errString
 }
