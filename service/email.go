@@ -2,7 +2,6 @@ package service
 
 import (
 	"fmt"
-	//"log"
 	"math/rand"
 	"net/smtp"
 	"sso/bean"

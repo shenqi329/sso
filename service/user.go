@@ -87,10 +87,9 @@ func UserLogout(token string) error {
 	return nil
 }
 
-func UserChangePassword(token string, userName string, originalPassword string, newPassword string) error {
+func UserChangePassword(token string, originalPassword string, newPassword string) error {
 
-	if userName == "" ||
-		originalPassword == "" {
+	if originalPassword == "" {
 		return ssoerror.ErrorIllegalParams
 	}
 
@@ -98,19 +97,20 @@ func UserChangePassword(token string, userName string, originalPassword string, 
 		return ssoerror.ErrorPasswordFormatError
 	}
 
-	if strings.EqualFold(originalPassword, newPassword) {
-		return ssoerror.ErrorSameOriginalNewPassword
-	}
-
 	userBean, err := UserInfoByToken(token)
 	if err != nil {
 		return err
 	}
-	if !strings.EqualFold(userBean.UserName, userName) {
-		return ssoerror.ErrorIllegalParams
+
+	if !strings.EqualFold(userBean.Password, originalPassword) {
+		return ssoerror.ErrorPasswordWrong
 	}
 
-	count, err := dao.UpdateUser(&bean.User{Password: newPassword}, &bean.User{UserName: userName, Password: originalPassword})
+	if strings.EqualFold(userBean.Password, newPassword) {
+		return ssoerror.ErrorSameOriginalNewPassword
+	}
+
+	count, err := dao.UpdateUser(&bean.User{Password: newPassword}, &bean.User{UserName: userBean.UserName, Password: originalPassword})
 	if err != nil {
 		return ssoerror.ErrorInternalServerError
 	}

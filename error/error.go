@@ -22,6 +22,7 @@ var (
 	ErrorPasswordFormatError     = NEWError(RegisterPasswordFormatError)
 	ErrorUserNameOrPasswordFail  = NEWError(RegisterUserNameOrPasswordFail)
 	ErrorSameOriginalNewPassword = NEWError(RegisterSameOriginalNewPassword)
+	ErrorPasswordWrong           = NEWError(RegisterPasswordWrong)
 )
 
 const (
@@ -42,6 +43,7 @@ const (
 	RegisterPasswordFormatError     = "00001006"
 	RegisterUserNameOrPasswordFail  = "00001007"
 	RegisterSameOriginalNewPassword = "00001008"
+	RegisterPasswordWrong           = "00001009"
 )
 
 var codeText = map[string]string{
@@ -62,6 +64,7 @@ var codeText = map[string]string{
 	RegisterPasswordFormatError:     "password format wrong",
 	RegisterUserNameOrPasswordFail:  "username or passowd wrong",
 	RegisterSameOriginalNewPassword: "original password is same with new password",
+	RegisterPasswordWrong:           "password wrong",
 }
 
 func ErrorCodeToText(code string) string {

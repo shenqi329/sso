@@ -50,11 +50,10 @@ func UserUpdate(c echo.Context) error {
 func UserChangePassword(c echo.Context) error {
 
 	token := c.Request().Header().Get("token")
-	userName := c.Request().FormValue("username")
 	originalPassword := c.Request().FormValue("original")
 	newPassword := c.Request().FormValue("new")
 
-	if err := service.UserChangePassword(token, userName, originalPassword, newPassword); err != nil {
+	if err := service.UserChangePassword(token, originalPassword, newPassword); err != nil {
 		return ControllerHandleError(c, err)
 	}
 
