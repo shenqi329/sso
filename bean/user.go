@@ -22,8 +22,8 @@ type (
 		LastLoginDate    *time.Time `xorm:"'t_user_last_login_date'" json:"lastLoginDate,omitempty" form:"lastLoginDate" gorm:"column:t_user_last_login_date"`
 		Email            string     `xorm:"'t_user_email'" json:"email,omitempty" form:"email" gorm:"column:t_user_email"`
 		Mobile           *string    `xorm:"'t_user_mobile'" json:"mobile,omitempty" gorm:"column:t_user_mobile"`
-		CreateTime       *time.Time `xorm:"'t_user_create_time'" json:"createTime" bson:"createTime" form:"createTime" gorm:"column:t_user_create_date"`
-		UpdateTime       *time.Time `xorm:"'t_user_update_time'" json:"updateTime" bson:"updateTime" form:"updateTime" gorm:"column:t_user_update_time"`
+		CreateTime       *time.Time `xorm:"'t_user_create_time'" json:"createTime,omitempty" bson:"createTime" form:"createTime" gorm:"column:t_user_create_date"`
+		UpdateTime       *time.Time `xorm:"'t_user_update_time'" json:"updateTime,omitempty" bson:"updateTime" form:"updateTime" gorm:"column:t_user_update_time"`
 		IsEmailConfirmed bool       `xorm:"'t_user_is_email_confirmed'" json:"emailConfirmed" bson:"emailConfirmed,omitempty" gorm:"column:t_user_is_email_confirmed"`
 	}
 )

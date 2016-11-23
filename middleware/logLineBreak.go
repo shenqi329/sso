@@ -9,7 +9,7 @@ func LogLineBreak() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) (err error) {
 
-			fmt.Println("\r\n\r\n")
+			fmt.Println("")
 			if err = next(c); err != nil {
 				c.Error(err)
 			}

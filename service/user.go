@@ -6,26 +6,20 @@ import (
 	"sso/dao"
 	ssoerror "sso/error"
 	"sso/uuid"
+	"strings"
 	"time"
 )
 
-// var (
-// 	ErrorParams            = errors.New("parameter error")
-// 	ErrorResourceExist     = errors.New("resource already exist")
-// 	ErrorNotFound          = errors.New("resource doesn't exist")
-// 	ErrorDatabaseOperation = errors.New("database operation")
-// )
+func UserInfoByToken(token string) (*bean.User, error) {
 
-func UserInfo(token string) (*bean.User, error) {
-
-	if len(token) <= 0 {
-		return nil, ssoerror.ErrorIllegalParams
+	if err := CheckToken(token); err != nil {
+		return nil, err
 	}
 
 	tokenBean := &bean.Token{Token: token}
-	userBean := &bean.User{}
 
 	has, err := dao.GetToken(tokenBean)
+	userBean := &bean.User{ID: tokenBean.UserId}
 
 	if has {
 		has, err = dao.GetUser(userBean)
@@ -36,7 +30,7 @@ func UserInfo(token string) (*bean.User, error) {
 	}
 
 	if !has {
-		return nil, ssoerror.ErrorNotFound
+		return nil, ssoerror.ErrorTokenInvalidated
 	}
 
 	return userBean, nil
@@ -70,17 +64,15 @@ func UserLogin(user *bean.User, token *bean.Token) (*bean.User, *bean.Token, err
 		log.Println(err.Error())
 		return nil, nil, ssoerror.ErrorInternalServerError
 	}
-
 	lastLoginDate := time.Now()
-	dao.UpdateUser(&bean.User{ID: user.ID, LastLoginDate: &lastLoginDate})
-
+	dao.UpdateUser(&bean.User{LastLoginDate: &lastLoginDate}, &bean.User{ID: user.ID})
 	return user, tokenBean, nil
 }
 
 func UserLogout(token string) error {
 
-	if len(token) <= 0 {
-		return ssoerror.ErrorIllegalParams
+	if err := CheckToken(token); err != nil {
+		return err
 	}
 
 	count, err := dao.RemoveToken(&bean.Token{Token: token})
@@ -92,6 +84,39 @@ func UserLogout(token string) error {
 		return ssoerror.ErrorNotFound
 	}
 
+	return nil
+}
+
+func UserChangePassword(token string, userName string, originalPassword string, newPassword string) error {
+
+	if userName == "" ||
+		originalPassword == "" {
+		return ssoerror.ErrorIllegalParams
+	}
+
+	if err := CheckPassword(newPassword); err != nil {
+		return ssoerror.ErrorPasswordFormatError
+	}
+
+	if strings.EqualFold(originalPassword, newPassword) {
+		return ssoerror.ErrorSameOriginalNewPassword
+	}
+
+	userBean, err := UserInfoByToken(token)
+	if err != nil {
+		return err
+	}
+	if !strings.EqualFold(userBean.UserName, userName) {
+		return ssoerror.ErrorIllegalParams
+	}
+
+	count, err := dao.UpdateUser(&bean.User{Password: newPassword}, &bean.User{UserName: userName, Password: originalPassword})
+	if err != nil {
+		return ssoerror.ErrorInternalServerError
+	}
+	if count <= 0 {
+		return ssoerror.ErrorUserNameOrPasswordFail
+	}
 	return nil
 }
 

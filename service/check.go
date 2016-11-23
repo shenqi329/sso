@@ -6,6 +6,13 @@ import (
 	ssoerror "sso/error"
 )
 
+func CheckToken(token string) error {
+	if len(token) <= 0 {
+		return ssoerror.ErrorIllegalParams
+	}
+	return nil
+}
+
 func CheckEmail(email string) error {
 	if len(email) <= 0 {
 		return ssoerror.ErrorIllegalParams
@@ -55,7 +62,8 @@ func CheckPassword(password string) error {
 	}
 
 	//ascii字符集
-	pattern := `^[:ascii:]{8,20}$`
+	pattern := `^[\x00-\x7F]{8,20}$`
+	//pattern := `^[:ascii:]{8,20}$`
 	regexp.MustCompile(pattern)
 	match, err := regexp.MatchString(pattern, password)
 	if err != nil {
@@ -63,7 +71,7 @@ func CheckPassword(password string) error {
 		return ssoerror.ErrorInternalServerError
 	}
 	if !match {
-		log.Println("密码不匹配")
+		log.Println("密码格式不对")
 		return ssoerror.ErrorPasswordFormatError
 	}
 
@@ -75,8 +83,8 @@ func CheckPassword(password string) error {
 		log.Println(err.Error())
 		return ssoerror.ErrorInternalServerError
 	}
-	if !match {
-		log.Println("密码不匹配")
+	if match {
+		log.Println("密码格式不对")
 		return ssoerror.ErrorPasswordFormatError
 	}
 

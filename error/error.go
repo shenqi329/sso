@@ -11,14 +11,17 @@ var (
 	ErrorResourceExist       = NEWError(CommonResourceExist)
 	ErrorNotFound            = NEWError(CommonResourceNoExist)
 	ErrorInternalServerError = NEWError(CommonInternalServerError)
+	ErrorTokenInvalidated    = NEWError(CommonTokenInvalidated)
 
 	//注册
-	ErrorRegisterEmailInUse  = NEWError(RegisterEmailInUse)
-	ErrorRegisterEmailFormat = NEWError(RegisterEmailFormatError)
-	ErrorRegisterErrorCode   = NEWError(RegisterErrorCode)
-	ErrorRegisterUserExist   = NEWError(RegisterUserExist)
-	ErrorUserNameFormatError = NEWError(RegisterUserNameFormatError)
-	ErrorPasswordFormatError = NEWError(RegisterPasswordFormatError)
+	ErrorRegisterEmailInUse      = NEWError(RegisterEmailInUse)
+	ErrorRegisterEmailFormat     = NEWError(RegisterEmailFormatError)
+	ErrorRegisterErrorCode       = NEWError(RegisterErrorCode)
+	ErrorRegisterUserExist       = NEWError(RegisterUserExist)
+	ErrorUserNameFormatError     = NEWError(RegisterUserNameFormatError)
+	ErrorPasswordFormatError     = NEWError(RegisterPasswordFormatError)
+	ErrorUserNameOrPasswordFail  = NEWError(RegisterUserNameOrPasswordFail)
+	ErrorSameOriginalNewPassword = NEWError(RegisterSameOriginalNewPassword)
 )
 
 const (
@@ -28,14 +31,17 @@ const (
 	CommonResourceNoExist     = "00000003"
 	CommonResourceExist       = "00000004"
 	CommonInternalServerError = "00000005"
+	CommonTokenInvalidated    = "00000006"
 
 	//注册
-	RegisterEmailInUse          = "00001001"
-	RegisterEmailFormatError    = "00001002"
-	RegisterErrorCode           = "00001003"
-	RegisterUserExist           = "00001004"
-	RegisterUserNameFormatError = "00001005"
-	RegisterPasswordFormatError = "00001006"
+	RegisterEmailInUse              = "00001001"
+	RegisterEmailFormatError        = "00001002"
+	RegisterErrorCode               = "00001003"
+	RegisterUserExist               = "00001004"
+	RegisterUserNameFormatError     = "00001005"
+	RegisterPasswordFormatError     = "00001006"
+	RegisterUserNameOrPasswordFail  = "00001007"
+	RegisterSameOriginalNewPassword = "00001008"
 )
 
 var codeText = map[string]string{
@@ -44,15 +50,18 @@ var codeText = map[string]string{
 	CommonIllegalParams:       "illegal parameter",
 	CommonResourceNoExist:     "resource doesn't exist",
 	CommonResourceExist:       "resource already exists",
-	CommonInternalServerError: "internal server error",
+	CommonInternalServerError: "internal server wrong",
+	CommonTokenInvalidated:    "token invalidated",
 
 	//注册
-	RegisterEmailInUse:          "the email address is currently in use",
-	RegisterEmailFormatError:    "the email format error",
-	RegisterErrorCode:           "error verify code",
-	RegisterUserExist:           "user already exists",
-	RegisterUserNameFormatError: "username format error",
-	RegisterPasswordFormatError: "password format error",
+	RegisterEmailInUse:              "the email address is currently in use",
+	RegisterEmailFormatError:        "the email format wrong",
+	RegisterErrorCode:               "wrong verify code",
+	RegisterUserExist:               "user already exists",
+	RegisterUserNameFormatError:     "username format wrong",
+	RegisterPasswordFormatError:     "password format wrong",
+	RegisterUserNameOrPasswordFail:  "username or passowd wrong",
+	RegisterSameOriginalNewPassword: "original password is same with new password",
 }
 
 func ErrorCodeToText(code string) string {

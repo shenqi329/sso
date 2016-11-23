@@ -16,11 +16,11 @@ func GetUser(user *bean.User) (bool, error) {
 	return has, err
 }
 
-func UpdateUser(user *bean.User) (int64, error) {
+func UpdateUser(user *bean.User, condiUsers ...interface{}) (int64, error) {
 
 	engine := mysql.GetXormEngine()
 
-	count, err := engine.Update(user)
+	count, err := engine.Update(user, condiUsers...)
 
 	return count, err
 }

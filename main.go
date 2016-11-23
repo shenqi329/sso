@@ -25,6 +25,8 @@ func main() {
 	e.Pre(echomiddleware.Logger())
 
 	e.GET("/user/info", controller.UserInfo)
+	e.Post("/user/update", controller.UserUpdate)
+	e.Post("/user/register/changepassword", controller.UserChangePassword)
 	e.POST("/user/register/email/code", controller.UserRegisetrEMailVerifyCode)
 	e.POST("/user/register", controller.UserRegister)
 	e.POST("/user/login", controller.UserLogin)

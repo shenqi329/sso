@@ -28,8 +28,7 @@ func UserRegisetrEMailVerifyCode(c echo.Context) error {
 func UserInfo(c echo.Context) error {
 
 	token := c.Request().Header().Get("token")
-
-	userBean, err := service.UserInfo(token)
+	userBean, err := service.UserInfoByToken(token)
 	if err != nil {
 		return ControllerHandleError(c, err)
 	}
@@ -39,6 +38,27 @@ func UserInfo(c echo.Context) error {
 	response.Data = map[string]interface{}{
 		"userinfo": userBean,
 	}
+	return c.JSON(http.StatusOK, response)
+}
+
+func UserUpdate(c echo.Context) error {
+
+	response := bean.NEWResponse(ssoerror.CommonSuccess)
+	return c.JSON(http.StatusOK, response)
+}
+
+func UserChangePassword(c echo.Context) error {
+
+	token := c.Request().Header().Get("token")
+	userName := c.Request().FormValue("username")
+	originalPassword := c.Request().FormValue("original")
+	newPassword := c.Request().FormValue("new")
+
+	if err := service.UserChangePassword(token, userName, originalPassword, newPassword); err != nil {
+		return ControllerHandleError(c, err)
+	}
+
+	response := bean.NEWResponse(ssoerror.CommonSuccess)
 	return c.JSON(http.StatusOK, response)
 }
 
