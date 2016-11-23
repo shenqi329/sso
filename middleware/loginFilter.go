@@ -1,21 +1,21 @@
 package middleware
 
-import (
-	"fmt"
-	"github.com/labstack/echo"
-)
+// import (
+// 	"github.com/labstack/echo"
+// 	"log"
+// )
 
-func LoginFilter() echo.MiddlewareFunc {
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) (err error) {
-			req := c.Request()
-			//resp := c.Response()
+// func LoginFilter() echo.MiddlewareFunc {
+// 	return func(next echo.HandlerFunc) echo.HandlerFunc {
+// 		return func(c echo.Context) (err error) {
+// 			req := c.Request()
+// 			//resp := c.Response()
 
-			if err = next(c); err != nil {
-				c.Error(err)
-			}
-			fmt.Println("LoginFilter")
-			return err
-		}
-	}
-}
+// 			if err = next(c); err != nil {
+// 				c.Error(err)
+// 			}
+// 			log.Println("LoginFilter")
+// 			return err
+// 		}
+// 	}
+// }

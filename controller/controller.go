@@ -2,7 +2,7 @@ package controller
 
 import (
 	"github.com/labstack/echo"
-	"log"
+	//"log"
 	"net/http"
 	"reflect"
 	"sso/bean"
@@ -23,7 +23,7 @@ func ControllerHandleError(c echo.Context, err error) error {
 	if desc.Kind() == reflect.String {
 		response.Desc = desc.String()
 	}
-	log.Println(bean.StructToJsonString(response))
+	//log.Println(bean.StructToJsonString(response))
 
 	if len(response.Code) <= 0 {
 		response = bean.NEWResponse(ssoerror.CommonInternalServerError)

@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"sso/controller"
+	ssomiddleware "sso/middleware"
 	"sso/mysql"
 )
 
@@ -20,7 +21,8 @@ func main() {
 
 	e := echo.New()
 
-	e.Use(echomiddleware.Logger())
+	e.Pre(ssomiddleware.LogLineBreak())
+	e.Pre(echomiddleware.Logger())
 
 	e.GET("/user/info", controller.UserInfo)
 	e.POST("/user/register/email/code", controller.UserRegisetrEMailVerifyCode)

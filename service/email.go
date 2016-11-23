@@ -29,6 +29,13 @@ type (
 
 func UserRegisetrEMailVerifyCode(user *bean.User) error {
 
+	if err := CheckUserName(user.UserName); err != nil {
+		return err
+	}
+	if err := CheckEmail(user.Email); err != nil {
+		return err
+	}
+
 	has, err := dao.GetUser(&bean.User{UserName: user.UserName})
 
 	if err != nil {

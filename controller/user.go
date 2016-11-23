@@ -4,7 +4,6 @@ import (
 	"github.com/labstack/echo"
 	"log"
 	"net/http"
-	"regexp"
 	"sso/bean"
 	ssoerror "sso/error"
 	"sso/service"
@@ -17,21 +16,8 @@ func UserRegisetrEMailVerifyCode(c echo.Context) error {
 	if err := c.Bind(user); err != nil {
 		return ControllerHandleError(c, ssoerror.ErrorIllegalParams)
 	}
-	log.Println(bean.StructToJsonString(user))
 
-	if len(user.UserName) == 0 || len(user.Email) == 0 {
-		return ControllerHandleError(c, ssoerror.ErrorIllegalParams)
-	}
-
-	pattern := `\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*`
-	regexp.MustCompile(pattern)
-	match, err := regexp.MatchString(pattern, user.Email)
-	if !match || err != nil {
-		return ControllerHandleError(c, ssoerror.ErrorRegisterEmailFormat)
-	}
-
-	err = service.UserRegisetrEMailVerifyCode(user)
-	if err != nil {
+	if err := service.UserRegisetrEMailVerifyCode(user); err != nil {
 		return ControllerHandleError(c, err)
 	}
 
@@ -63,18 +49,7 @@ func UserRegister(c echo.Context) error {
 	if err := c.Bind(user); err != nil {
 		return ControllerHandleError(c, ssoerror.ErrorIllegalParams)
 	}
-	if len(user.UserName) == 0 ||
-		len(user.Password) == 0 ||
-		len(user.Email) == 0 {
-		return ControllerHandleError(c, ssoerror.ErrorIllegalParams)
-	}
-
 	if err := c.Bind(email); err != nil {
-		return ControllerHandleError(c, ssoerror.ErrorIllegalParams)
-	}
-	if len(email.UserName) == 0 ||
-		len(email.Email) == 0 ||
-		len(email.Code) == 0 {
 		return ControllerHandleError(c, ssoerror.ErrorIllegalParams)
 	}
 

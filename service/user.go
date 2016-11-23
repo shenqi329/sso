@@ -97,8 +97,14 @@ func UserLogout(token string) error {
 
 func UserRegister(user *bean.User, email *bean.Email) (*bean.User, error) {
 
-	if len(user.UserName) == 0 || len(user.Password) == 0 {
-		return nil, ssoerror.ErrorIllegalParams
+	if err := CheckUserName(user.UserName); err != nil {
+		return nil, err
+	}
+	if err := CheckPassword(user.Password); err != nil {
+		return nil, err
+	}
+	if err := CheckEmail(email.Email); err != nil {
+		return nil, err
 	}
 
 	has, err := dao.GetUser(&bean.User{UserName: user.UserName})
