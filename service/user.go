@@ -26,6 +26,7 @@ func UserInfoByToken(token string) (*bean.User, error) {
 	}
 
 	if err != nil {
+		log.Println(err.Error())
 		return nil, ssoerror.ErrorInternalServerError
 	}
 
@@ -37,6 +38,23 @@ func UserInfoByToken(token string) (*bean.User, error) {
 }
 
 func UserLogin(user *bean.User, token *bean.Token) (*bean.User, *bean.Token, error) {
+
+	if len(user.UserName) <= 0 ||
+		len(user.Password) <= 0 {
+		log.Println("获取用户信息失败")
+		return nil, nil, ssoerror.ErrorIllegalParams
+	}
+
+	if len(token.DeviceId) <= 0 ||
+		len(token.AppId) <= 0 ||
+		len(token.Platform) <= 0 {
+		log.Println("获取授权信息失败")
+		return nil, nil, ssoerror.ErrorIllegalParams
+	}
+
+	if err := CheckDeviceId(token.DeviceId); err != nil {
+		return nil, nil, err
+	}
 
 	has, err := dao.GetUser(user)
 
@@ -82,6 +100,32 @@ func UserLogout(token string) error {
 	}
 	if count <= 0 {
 		return ssoerror.ErrorNotFound
+	}
+
+	return nil
+}
+
+func UserUpdate(token string, user *bean.User) error {
+
+	userBean, err := UserInfoByToken(token)
+	if err != nil {
+		return err
+	}
+	log.Println(bean.StructToJsonString(userBean))
+
+	//目前只有这些属性能够被这个接口修改
+	updateUser := &bean.User{
+		Birthday: user.Birthday,
+		Name:     user.Name,
+		Icon:     user.Icon,
+		Sex:      user.Sex,
+		NickName: user.NickName,
+	}
+
+	_, err = dao.UpdateUser(updateUser, &bean.User{ID: userBean.ID, UserName: userBean.UserName})
+	if err != nil {
+		log.Println(err.Error())
+		return ssoerror.ErrorInternalServerError
 	}
 
 	return nil
@@ -142,10 +186,12 @@ func UserRegister(user *bean.User, email *bean.Email) (*bean.User, error) {
 
 	has, err = dao.GetEmail(&bean.Email{Email: email.Email, UserName: email.UserName, Code: email.Code})
 	if err != nil {
+		log.Println(err.Error())
 		return nil, ssoerror.ErrorInternalServerError
 	}
 
 	if !has {
+		log.Println("没有查询到数据")
 		return nil, ssoerror.ErrorRegisterErrorCode
 	}
 

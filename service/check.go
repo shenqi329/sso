@@ -6,10 +6,41 @@ import (
 	ssoerror "sso/error"
 )
 
+func CheckDeviceId(deviceId string) error {
+	if len(deviceId) <= 0 {
+		return ssoerror.ErrorIllegalParams
+	}
+
+	pattern := `^\w{32}$`
+	regexp.MustCompile(pattern)
+	match, err := regexp.MatchString(pattern, deviceId)
+	if err != nil {
+		log.Println(err.Error())
+		return ssoerror.ErrorInternalServerError
+	}
+	if !match {
+		return ssoerror.ErrorIllegalParams
+	}
+
+	return nil
+}
+
 func CheckToken(token string) error {
 	if len(token) <= 0 {
 		return ssoerror.ErrorIllegalParams
 	}
+
+	pattern := `^\w{32}$`
+	regexp.MustCompile(pattern)
+	match, err := regexp.MatchString(pattern, token)
+	if err != nil {
+		log.Println(err.Error())
+		return ssoerror.ErrorInternalServerError
+	}
+	if !match {
+		return ssoerror.ErrorIllegalParams
+	}
+
 	return nil
 }
 

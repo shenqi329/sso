@@ -43,7 +43,18 @@ func UserInfo(c echo.Context) error {
 
 func UserUpdate(c echo.Context) error {
 
+	token := c.Request().Header().Get("token")
 	response := bean.NEWResponse(ssoerror.CommonSuccess)
+
+	user := new(bean.User)
+	if err := c.Bind(user); err != nil {
+		return ControllerHandleError(c, ssoerror.ErrorIllegalParams)
+	}
+
+	if err := service.UserUpdate(token, user); err != nil {
+		return ControllerHandleError(c, err)
+	}
+
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -104,26 +115,14 @@ func UserLogin(c echo.Context) error {
 	userBean := &bean.User{}
 	tokenBean := &bean.Token{}
 
-	//检测用户信息
+	//用户信息
 	if err := c.Bind(userBean); err != nil {
 		log.Println("获取用户信息失败")
 		return ControllerHandleError(c, ssoerror.ErrorIllegalParams)
 	}
-	if len(userBean.UserName) <= 0 ||
-		len(userBean.Password) <= 0 {
-		log.Println("获取用户信息失败")
-		return ControllerHandleError(c, ssoerror.ErrorIllegalParams)
-	}
 
-	//检查授权信息
+	//授权信息
 	if err := c.Bind(tokenBean); err != nil {
-		log.Println("获取授权信息失败")
-		return ControllerHandleError(c, ssoerror.ErrorIllegalParams)
-	}
-
-	if len(tokenBean.DeviceId) <= 0 ||
-		len(tokenBean.AppId) <= 0 ||
-		len(tokenBean.Platform) <= 0 {
 		log.Println("获取授权信息失败")
 		return ControllerHandleError(c, ssoerror.ErrorIllegalParams)
 	}
