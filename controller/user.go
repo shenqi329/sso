@@ -48,6 +48,7 @@ func UserUpdate(c echo.Context) error {
 
 	user := new(bean.User)
 	if err := c.Bind(user); err != nil {
+		log.Println(err.Error())
 		return ControllerHandleError(c, ssoerror.ErrorIllegalParams)
 	}
 
@@ -60,11 +61,20 @@ func UserUpdate(c echo.Context) error {
 
 func UserChangePassword(c echo.Context) error {
 
-	token := c.Request().Header().Get("token")
-	originalPassword := c.Request().FormValue("original")
-	newPassword := c.Request().FormValue("new")
+	type ChangePassword struct {
+		OriginalPassword string `json:"originalpassword,omitempty" form:"originalpassword"`
+		NewPassword      string `json:"newpassword,omitempty" form:"newpassword"`
+	}
+	changePassoword := &ChangePassword{}
 
-	if err := service.UserChangePassword(token, originalPassword, newPassword); err != nil {
+	token := c.Request().Header().Get("token")
+
+	if err := c.Bind(changePassoword); err != nil {
+		log.Println(err.Error())
+		return ControllerHandleError(c, ssoerror.ErrorIllegalParams)
+	}
+
+	if err := service.UserChangePassword(token, changePassoword.OriginalPassword, changePassoword.NewPassword); err != nil {
 		return ControllerHandleError(c, err)
 	}
 
@@ -73,19 +83,15 @@ func UserChangePassword(c echo.Context) error {
 }
 
 func UserRegister(c echo.Context) error {
-	user := new(bean.User)
-	email := new(bean.Email)
 
-	if err := c.Bind(user); err != nil {
-		return ControllerHandleError(c, ssoerror.ErrorIllegalParams)
-	}
-	if err := c.Bind(email); err != nil {
+	register := &bean.Register{}
+	if err := c.Bind(register); err != nil {
+		log.Println(err.Error())
 		return ControllerHandleError(c, ssoerror.ErrorIllegalParams)
 	}
 
-	log.Println(bean.StructToJsonString(email))
+	_, err := service.UserRegister(register)
 
-	user, err := service.UserRegister(user, email)
 	if err != nil {
 		return ControllerHandleError(c, err)
 	}
@@ -112,22 +118,14 @@ func UserLogout(c echo.Context) error {
 
 func UserLogin(c echo.Context) error {
 
-	userBean := &bean.User{}
-	tokenBean := &bean.Token{}
-
+	login := &bean.Login{}
 	//用户信息
-	if err := c.Bind(userBean); err != nil {
-		log.Println("获取用户信息失败")
+	if err := c.Bind(login); err != nil {
+		log.Println(err.Error())
 		return ControllerHandleError(c, ssoerror.ErrorIllegalParams)
 	}
 
-	//授权信息
-	if err := c.Bind(tokenBean); err != nil {
-		log.Println("获取授权信息失败")
-		return ControllerHandleError(c, ssoerror.ErrorIllegalParams)
-	}
-
-	userBean, tokenBean, err := service.UserLogin(userBean, tokenBean)
+	userBean, tokenBean, err := service.UserLogin(login)
 	if err != nil {
 		c.Logger().Debug("error:" + err.Error())
 		return ControllerHandleError(c, err)

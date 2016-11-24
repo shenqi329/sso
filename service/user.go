@@ -37,24 +37,27 @@ func UserInfoByToken(token string) (*bean.User, error) {
 	return userBean, nil
 }
 
-func UserLogin(user *bean.User, token *bean.Token) (*bean.User, *bean.Token, error) {
+func UserLogin(login *bean.Login) (*bean.User, *bean.Token, error) {
 
-	if len(user.UserName) <= 0 ||
-		len(user.Password) <= 0 {
+	if len(login.UserName) <= 0 ||
+		len(login.Password) <= 0 {
 		log.Println("获取用户信息失败")
 		return nil, nil, ssoerror.ErrorIllegalParams
 	}
 
-	if len(token.DeviceId) <= 0 ||
-		len(token.AppId) <= 0 ||
-		len(token.Platform) <= 0 {
+	if len(login.DeviceId) <= 0 ||
+		len(login.AppId) <= 0 ||
+		len(login.Platform) <= 0 {
 		log.Println("获取授权信息失败")
 		return nil, nil, ssoerror.ErrorIllegalParams
 	}
 
-	if err := CheckDeviceId(token.DeviceId); err != nil {
+	if err := CheckDeviceId(login.DeviceId); err != nil {
 		return nil, nil, err
 	}
+
+	user := &bean.User{UserName: login.UserName, Password: login.Password}
+	token := &bean.Token{DeviceId: login.DeviceId, AppId: login.AppId, Platform: login.Platform}
 
 	has, err := dao.GetUser(user)
 
@@ -107,12 +110,15 @@ func UserLogout(token string) error {
 
 func UserUpdate(token string, user *bean.User) error {
 
+	log.Println(bean.StructToJsonString(user))
+
 	userBean, err := UserInfoByToken(token)
 	if err != nil {
 		return err
 	}
 	log.Println(bean.StructToJsonString(userBean))
 
+	return nil
 	//目前只有这些属性能够被这个接口修改
 	updateUser := &bean.User{
 		Birthday: user.Birthday,
@@ -164,19 +170,19 @@ func UserChangePassword(token string, originalPassword string, newPassword strin
 	return nil
 }
 
-func UserRegister(user *bean.User, email *bean.Email) (*bean.User, error) {
+func UserRegister(register *bean.Register) (*bean.User, error) {
 
-	if err := CheckUserName(user.UserName); err != nil {
+	if err := CheckUserName(register.UserName); err != nil {
 		return nil, err
 	}
-	if err := CheckPassword(user.Password); err != nil {
+	if err := CheckPassword(register.Password); err != nil {
 		return nil, err
 	}
-	if err := CheckEmail(email.Email); err != nil {
+	if err := CheckEmail(register.Email); err != nil {
 		return nil, err
 	}
 
-	has, err := dao.GetUser(&bean.User{UserName: user.UserName})
+	has, err := dao.GetUser(&bean.User{UserName: register.UserName})
 	if err != nil {
 		return nil, ssoerror.ErrorInternalServerError
 	}
@@ -184,7 +190,7 @@ func UserRegister(user *bean.User, email *bean.Email) (*bean.User, error) {
 		return nil, ssoerror.ErrorRegisterUserExist
 	}
 
-	has, err = dao.GetEmail(&bean.Email{Email: email.Email, UserName: email.UserName, Code: email.Code})
+	has, err = dao.GetEmail(&bean.Email{Email: register.Email, UserName: register.UserName, Code: register.Code})
 	if err != nil {
 		log.Println(err.Error())
 		return nil, ssoerror.ErrorInternalServerError
@@ -196,9 +202,14 @@ func UserRegister(user *bean.User, email *bean.Email) (*bean.User, error) {
 	}
 
 	timeNow := time.Now()
-	user.CreateTime = &timeNow
-	user.UpdateTime = &timeNow
-	user.IsEmailConfirmed = true
+	user := &bean.User{
+		UserName:         register.UserName,
+		Password:         register.Password,
+		Email:            register.Email,
+		CreateTime:       &timeNow,
+		UpdateTime:       &timeNow,
+		IsEmailConfirmed: true,
+	}
 
 	_, err = dao.InsertUser(user)
 
