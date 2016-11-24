@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"sso/bean"
 	ssoerror "sso/error"
+	"sso/request"
+	ssoresponse "sso/response"
 	"sso/service"
 )
 
@@ -33,29 +35,42 @@ func UserInfo(c echo.Context) error {
 		return ControllerHandleError(c, err)
 	}
 
-	userBean.Password = ""
 	response := bean.NEWResponse(ssoerror.CommonSuccess)
-	response.Data = map[string]interface{}{
-		"userinfo": userBean,
+	responseData := &ssoresponse.User{
+		UserName:         userBean.UserName,
+		Name:             userBean.Name,
+		Icon:             userBean.Icon,
+		Sex:              userBean.Sex,
+		NickName:         userBean.NickName,
+		Email:            userBean.Email,
+		Mobile:           userBean.Mobile,
+		IsEmailConfirmed: userBean.IsEmailConfirmed,
 	}
+	if userBean.Birthday != nil {
+		birthday := userBean.Birthday.Unix()
+		responseData.Birthday = &birthday
+	}
+
+	response.Data = responseData
 	return c.JSON(http.StatusOK, response)
 }
 
 func UserUpdate(c echo.Context) error {
 
 	token := c.Request().Header().Get("token")
-	response := bean.NEWResponse(ssoerror.CommonSuccess)
 
-	user := new(bean.User)
-	if err := c.Bind(user); err != nil {
+	update := &request.Update{}
+
+	if err := c.Bind(update); err != nil {
 		log.Println(err.Error())
 		return ControllerHandleError(c, ssoerror.ErrorIllegalParams)
 	}
 
-	if err := service.UserUpdate(token, user); err != nil {
+	if err := service.UserUpdate(token, update); err != nil {
 		return ControllerHandleError(c, err)
 	}
 
+	response := bean.NEWResponse(ssoerror.CommonSuccess)
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -84,7 +99,7 @@ func UserChangePassword(c echo.Context) error {
 
 func UserRegister(c echo.Context) error {
 
-	register := &bean.Register{}
+	register := &request.Register{}
 	if err := c.Bind(register); err != nil {
 		log.Println(err.Error())
 		return ControllerHandleError(c, ssoerror.ErrorIllegalParams)
@@ -118,7 +133,7 @@ func UserLogout(c echo.Context) error {
 
 func UserLogin(c echo.Context) error {
 
-	login := &bean.Login{}
+	login := &request.Login{}
 	//用户信息
 	if err := c.Bind(login); err != nil {
 		log.Println(err.Error())

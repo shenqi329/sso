@@ -5,6 +5,7 @@ import (
 	"sso/bean"
 	"sso/dao"
 	ssoerror "sso/error"
+	"sso/request"
 	"sso/uuid"
 	"strings"
 	"time"
@@ -37,7 +38,7 @@ func UserInfoByToken(token string) (*bean.User, error) {
 	return userBean, nil
 }
 
-func UserLogin(login *bean.Login) (*bean.User, *bean.Token, error) {
+func UserLogin(login *request.Login) (*bean.User, *bean.Token, error) {
 
 	if len(login.UserName) <= 0 ||
 		len(login.Password) <= 0 {
@@ -108,24 +109,27 @@ func UserLogout(token string) error {
 	return nil
 }
 
-func UserUpdate(token string, user *bean.User) error {
+func UserUpdate(token string, update *request.Update) error {
 
-	log.Println(bean.StructToJsonString(user))
+	log.Println(bean.StructToJsonString(update))
 
 	userBean, err := UserInfoByToken(token)
 	if err != nil {
 		return err
 	}
-	log.Println(bean.StructToJsonString(userBean))
 
-	return nil
-	//目前只有这些属性能够被这个接口修改
+	var birthday *time.Time
+	if update.Birthday != nil {
+		time := time.Unix(*update.Birthday, 0)
+		birthday = &time
+	}
+
 	updateUser := &bean.User{
-		Birthday: user.Birthday,
-		Name:     user.Name,
-		Icon:     user.Icon,
-		Sex:      user.Sex,
-		NickName: user.NickName,
+		Birthday: birthday,
+		Name:     update.Name,
+		Icon:     update.Icon,
+		Sex:      update.Sex,
+		NickName: update.NickName,
 	}
 
 	_, err = dao.UpdateUser(updateUser, &bean.User{ID: userBean.ID, UserName: userBean.UserName})
@@ -170,7 +174,7 @@ func UserChangePassword(token string, originalPassword string, newPassword strin
 	return nil
 }
 
-func UserRegister(register *bean.Register) (*bean.User, error) {
+func UserRegister(register *request.Register) (*bean.User, error) {
 
 	if err := CheckUserName(register.UserName); err != nil {
 		return nil, err
