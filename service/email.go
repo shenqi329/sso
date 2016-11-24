@@ -27,6 +27,14 @@ type (
 	}
 )
 
+func newVerifyCode() string {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+
+	verifyCode := fmt.Sprintf("%06d", r.Intn(999999))
+
+	return verifyCode
+}
+
 func UserRegisetrEMailVerifyCode(user *bean.User) error {
 
 	if err := CheckUserName(user.UserName); err != nil {
@@ -53,9 +61,7 @@ func UserRegisetrEMailVerifyCode(user *bean.User) error {
 		return ssoerror.ErrorRegisterEmailInUse
 	}
 
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-
-	emailCode := fmt.Sprintf("%06d", r.Intn(999999))
+	emailCode := newVerifyCode()
 	expiredTime := time.Now().Add(10 * time.Minute)
 	emailBean := bean.Email{
 		UserName:    user.UserName,
@@ -71,9 +77,38 @@ func UserRegisetrEMailVerifyCode(user *bean.User) error {
 		return ssoerror.ErrorInternalServerError
 	}
 
-	emailToSend := newEmail(user.Email, "验证码", fmt.Sprintf("注册easynote的验证码为:%s,10分钟内有效", emailCode))
+	emailToSend := NewEmail(user.Email, "验证码", fmt.Sprintf("注册easynote的验证码为:%s,10分钟内有效", emailCode))
 
-	go sendEmail(emailToSend)
+	go SendEmail(emailToSend)
+
+	return nil
+}
+
+func ChangeEmailVerifyCode(token string, newEmail string) error {
+	if err := CheckToken(token); err != nil {
+		return err
+	}
+	if err := CheckEmail(newEmail); err != nil {
+		return err
+	}
+
+	_, err := UserInfoByToken(token)
+	if err != nil {
+		return err
+	}
+
+	has, err := dao.GetUser(&bean.User{Email: newEmail})
+	if err != nil {
+		return ssoerror.ErrorInternalServerError
+	}
+	if has {
+		return ssoerror.ErrorRegisterEmailInUse
+	}
+
+	emailCode := newVerifyCode()
+	emailToSend := NewEmail(newEmail, "验证码", fmt.Sprintf("修改easynote邮箱验证码为:%s,10分钟内有效", emailCode))
+
+	go SendEmail(emailToSend)
 
 	return nil
 }
@@ -107,11 +142,11 @@ func ChangeEmail(token string, newEmail string, verifyCode string) error {
 	return nil
 }
 
-func newEmail(to, subject, msg string) *Email {
+func NewEmail(to, subject, msg string) *Email {
 	return &Email{to: to, subject: subject, msg: msg}
 }
 
-func sendEmail(email *Email) {
+func SendEmail(email *Email) {
 	auth := smtp.PlainAuth("", USER, PASSWORD, HOST)
 	sendTo := strings.Split(email.to, ";")
 	done := make(chan error, 1024)
