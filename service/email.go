@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"net/smtp"
 	"sso/bean"
@@ -73,6 +74,35 @@ func UserRegisetrEMailVerifyCode(user *bean.User) error {
 	emailToSend := newEmail(user.Email, "验证码", fmt.Sprintf("注册easynote的验证码为:%s,10分钟内有效", emailCode))
 
 	go sendEmail(emailToSend)
+
+	return nil
+}
+
+func ChangeEmail(token string, newEmail string, verifyCode string) error {
+	if err := CheckToken(token); err != nil {
+		return err
+	}
+	if err := CheckEmail(newEmail); err != nil {
+		return err
+	}
+	if err := CheckVerifyCode(verifyCode); err != nil {
+		return err
+	}
+
+	userBean, err := UserInfoByToken(token)
+	if err != nil {
+		return err
+	}
+
+	updateUser := &bean.User{
+		Email: newEmail,
+	}
+
+	_, err = dao.UpdateUser(updateUser, &bean.User{ID: userBean.ID, UserName: userBean.UserName})
+	if err != nil {
+		log.Println(err.Error())
+		return ssoerror.ErrorInternalServerError
+	}
 
 	return nil
 }

@@ -25,6 +25,13 @@ func CheckDeviceId(deviceId string) error {
 	return nil
 }
 
+func CheckVerifyCode(code string) error {
+	if len(code) <= 0 {
+		return ssoerror.ErrorIllegalParams
+	}
+	return nil
+}
+
 func CheckToken(token string) error {
 	if len(token) <= 0 {
 		return ssoerror.ErrorIllegalParams

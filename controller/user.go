@@ -74,6 +74,35 @@ func UserUpdate(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
+func ChangeEmailVerifyCode(c echo.Context) error {
+
+	response := bean.NEWResponse(ssoerror.CommonSuccess)
+	return c.JSON(http.StatusOK, response)
+}
+
+func ChangeEmail(c echo.Context) error {
+
+	type ChangeEmail struct {
+		NewMail    string `json:"newEmail,omitempty" form:"newEmail"`
+		VerifyCode string `json:"verifyCode,omitempty" form:"verifyCode"`
+	}
+	token := c.Request().Header().Get("token")
+	changeEmail := &ChangeEmail{}
+
+	if err := c.Bind(changeEmail); err != nil {
+		log.Println(err.Error())
+		return ControllerHandleError(c, ssoerror.ErrorIllegalParams)
+	}
+
+	if err := service.ChangeEmail(token, changeEmail.NewMail, changeEmail.VerifyCode); err != nil {
+		log.Println(err.Error())
+		return ControllerHandleError(c, err)
+	}
+
+	response := bean.NEWResponse(ssoerror.CommonSuccess)
+	return c.JSON(http.StatusOK, response)
+}
+
 func UserChangePassword(c echo.Context) error {
 
 	type ChangePassword struct {
