@@ -174,6 +174,44 @@ func UserChangePassword(token string, originalPassword string, newPassword strin
 	return nil
 }
 
+func ChangeEmail(token string, newEmail string, verifyCode string) error {
+	if err := CheckToken(token); err != nil {
+		return err
+	}
+	if err := CheckEmail(newEmail); err != nil {
+		return err
+	}
+	if err := CheckVerifyCode(verifyCode); err != nil {
+		return err
+	}
+
+	has, err := dao.GetVerify(&bean.Verify{Type: bean.VerifyTypeChangeEmail, VerifyId: newEmail, VerifyCode: verifyCode})
+	if err != nil {
+		log.Println(err.Error())
+		return ssoerror.ErrorInternalServerError
+	}
+	if !has {
+		return ssoerror.ErrorRegisterErrorVerifyCode
+	}
+
+	userBean, err := UserInfoByToken(token)
+	if err != nil {
+		return err
+	}
+
+	updateUser := &bean.User{
+		Email: newEmail,
+	}
+
+	_, err = dao.UpdateUser(updateUser, &bean.User{ID: userBean.ID, UserName: userBean.UserName})
+	if err != nil {
+		log.Println(err.Error())
+		return ssoerror.ErrorInternalServerError
+	}
+
+	return nil
+}
+
 func UserRegister(register *request.Register) (*bean.User, error) {
 
 	if err := CheckUserName(register.UserName); err != nil {
@@ -194,7 +232,8 @@ func UserRegister(register *request.Register) (*bean.User, error) {
 		return nil, ssoerror.ErrorRegisterUserExist
 	}
 
-	has, err = dao.GetEmail(&bean.Email{Email: register.Email, UserName: register.UserName, Code: register.Code})
+	has, err = dao.GetVerify(&bean.Verify{Type: bean.VerifyTypeRegisterEmail, VerifyId: register.Email, VerifyCode: register.VerifyCode})
+	//has, err = dao.GetEmail(&bean.Email{Email: register.Email, UserName: register.UserName, VerifyCode: register.VerifyCode})
 	if err != nil {
 		log.Println(err.Error())
 		return nil, ssoerror.ErrorInternalServerError
@@ -202,7 +241,7 @@ func UserRegister(register *request.Register) (*bean.User, error) {
 
 	if !has {
 		log.Println("没有查询到数据")
-		return nil, ssoerror.ErrorRegisterErrorCode
+		return nil, ssoerror.ErrorRegisterErrorVerifyCode
 	}
 
 	timeNow := time.Now()

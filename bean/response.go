@@ -6,9 +6,9 @@ import (
 
 type (
 	Response struct {
-		Code string      `json:"code"  form:"code"`
-		Desc string      `json:"desc"  form:"desc"`
-		Data interface{} `json:"data"  form:"data"`
+		Code string      `json:"code"`
+		Desc string      `json:"desc"`
+		Data interface{} `json:"data"`
 	}
 )
 

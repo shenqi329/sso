@@ -2,8 +2,6 @@ package service
 
 import (
 	"fmt"
-	"log"
-	"math/rand"
 	"net/smtp"
 	"sso/bean"
 	"sso/dao"
@@ -26,14 +24,6 @@ type (
 		msg     string "msg"
 	}
 )
-
-func newVerifyCode() string {
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-
-	verifyCode := fmt.Sprintf("%06d", r.Intn(999999))
-
-	return verifyCode
-}
 
 func UserRegisetrEMailVerifyCode(user *bean.User) error {
 
@@ -61,25 +51,44 @@ func UserRegisetrEMailVerifyCode(user *bean.User) error {
 		return ssoerror.ErrorRegisterEmailInUse
 	}
 
-	emailCode := newVerifyCode()
+	verifyCode := newVerifyCode()
 	expiredTime := time.Now().Add(10 * time.Minute)
-	emailBean := bean.Email{
-		UserName:    user.UserName,
-		Email:       user.Email,
-		Code:        emailCode,
-		ExpiredTime: &expiredTime,
-	}
-	count, err := dao.InsertEmail(&emailBean)
-	if err != nil {
-		return ssoerror.ErrorInternalServerError
-	}
-	if count <= 0 {
-		return ssoerror.ErrorInternalServerError
-	}
+	{
+		verifyBean := &bean.Verify{
+			Type:        bean.VerifyTypeRegisterEmail,
+			VerifyId:    user.Email,
+			VerifyCode:  verifyCode,
+			ExpiredTime: &expiredTime,
+		}
+		count, err := dao.InsertVerify(verifyBean)
+		if err != nil {
+			return ssoerror.ErrorInternalServerError
+		}
+		if count <= 0 {
+			return ssoerror.ErrorInternalServerError
+		}
+		emailToSend := NewEmail(user.Email, "验证码", fmt.Sprintf("注册easynote的验证码为:%s,%d分钟内有效", verifyCode, 10))
 
-	emailToSend := NewEmail(user.Email, "验证码", fmt.Sprintf("注册easynote的验证码为:%s,10分钟内有效", emailCode))
+		go SendEmail(emailToSend)
+	}
+	// {
+	// 	emailBean := &bean.Email{
+	// 		UserName:    user.UserName,
+	// 		Email:       user.Email,
+	// 		VerifyCode:  verifyCode,
+	// 		ExpiredTime: &expiredTime,
+	// 	}
+	// 	count, err := dao.InsertEmail(emailBean)
+	// 	if err != nil {
+	// 		return ssoerror.ErrorInternalServerError
+	// 	}
+	// 	if count <= 0 {
+	// 		return ssoerror.ErrorInternalServerError
+	// 	}
+	// 	emailToSend := NewEmail(user.Email, "验证码", fmt.Sprintf("注册easynote的验证码为:%s,%d分钟内有效", verifyCode, 10))
 
-	go SendEmail(emailToSend)
+	// 	go SendEmail(emailToSend)
+	// }
 
 	return nil
 }
@@ -106,38 +115,23 @@ func ChangeEmailVerifyCode(token string, newEmail string) error {
 	}
 
 	emailCode := newVerifyCode()
-	emailToSend := NewEmail(newEmail, "验证码", fmt.Sprintf("修改easynote邮箱验证码为:%s,10分钟内有效", emailCode))
-
-	go SendEmail(emailToSend)
-
-	return nil
-}
-
-func ChangeEmail(token string, newEmail string, verifyCode string) error {
-	if err := CheckToken(token); err != nil {
-		return err
+	expiredTime := time.Now().Add(10 * time.Minute)
+	verifyBean := &bean.Verify{
+		Type:        bean.VerifyTypeChangeEmail,
+		VerifyId:    newEmail,
+		VerifyCode:  emailCode,
+		ExpiredTime: &expiredTime,
 	}
-	if err := CheckEmail(newEmail); err != nil {
-		return err
-	}
-	if err := CheckVerifyCode(verifyCode); err != nil {
-		return err
-	}
-
-	userBean, err := UserInfoByToken(token)
+	count, err := dao.InsertVerify(verifyBean)
 	if err != nil {
-		return err
-	}
-
-	updateUser := &bean.User{
-		Email: newEmail,
-	}
-
-	_, err = dao.UpdateUser(updateUser, &bean.User{ID: userBean.ID, UserName: userBean.UserName})
-	if err != nil {
-		log.Println(err.Error())
 		return ssoerror.ErrorInternalServerError
 	}
+	if count <= 0 {
+		return ssoerror.ErrorInternalServerError
+	}
+
+	emailToSend := NewEmail(newEmail, "验证码", fmt.Sprintf("修改easynote邮箱验证码为:%s,10分钟内有效", emailCode))
+	go SendEmail(emailToSend)
 
 	return nil
 }

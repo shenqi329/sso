@@ -16,7 +16,7 @@ var (
 	//注册
 	ErrorRegisterEmailInUse      = NEWError(RegisterEmailInUse)
 	ErrorRegisterEmailFormat     = NEWError(RegisterEmailFormatError)
-	ErrorRegisterErrorCode       = NEWError(RegisterErrorCode)
+	ErrorRegisterErrorVerifyCode = NEWError(RegisterErrorVerifyCode)
 	ErrorRegisterUserExist       = NEWError(RegisterUserExist)
 	ErrorUserNameFormatError     = NEWError(RegisterUserNameFormatError)
 	ErrorPasswordFormatError     = NEWError(RegisterPasswordFormatError)
@@ -37,7 +37,7 @@ const (
 	//注册
 	RegisterEmailInUse              = "00001001"
 	RegisterEmailFormatError        = "00001002"
-	RegisterErrorCode               = "00001003"
+	RegisterErrorVerifyCode         = "00001003"
 	RegisterUserExist               = "00001004"
 	RegisterUserNameFormatError     = "00001005"
 	RegisterPasswordFormatError     = "00001006"
@@ -58,7 +58,7 @@ var codeText = map[string]string{
 	//注册
 	RegisterEmailInUse:              "the email address is currently in use",
 	RegisterEmailFormatError:        "the email format wrong",
-	RegisterErrorCode:               "wrong verify code",
+	RegisterErrorVerifyCode:         "wrong verify code",
 	RegisterUserExist:               "user already exists",
 	RegisterUserNameFormatError:     "username format wrong",
 	RegisterPasswordFormatError:     "password format wrong",
