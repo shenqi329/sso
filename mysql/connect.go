@@ -22,7 +22,7 @@ func GetDB() *gorm.DB {
 func GetXormEngine() *xorm.Engine {
 	if engine == nil {
 		if runtime.GOOS == "windows" {
-			eng, err := xorm.NewEngine("mysql", "user_connect:user_connect@tcp(localhost:3306)/db_sso?charset=utf8")
+			eng, err := xorm.NewEngine("mysql", "sso_connect:sso_connect@tcp(localhost:3306)/db_sso?charset=utf8")
 			if err != nil {
 				log.Println(err.Error())
 				return nil
@@ -30,7 +30,7 @@ func GetXormEngine() *xorm.Engine {
 			engine = eng
 			engine.ShowSQL(true)
 		} else {
-			eng, err := xorm.NewEngine("mysql", "user_connect:user_connect@tcp(172.17.0.2:3306)/db_sso?charset=utf8")
+			eng, err := xorm.NewEngine("mysql", "sso_connect:sso_connect@tcp(localhost:3306)/db_sso?charset=utf8")
 			if err != nil {
 				log.Println(err.Error())
 				return nil

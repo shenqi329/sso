@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"log"
 	"net/smtp"
 	"sso/bean"
 	"sso/dao"
@@ -37,6 +38,7 @@ func UserRegisetrEMailVerifyCode(user *bean.User) error {
 	has, err := dao.GetUser(&bean.User{UserName: user.UserName})
 
 	if err != nil {
+		log.Println(err)
 		return ssoerror.ErrorInternalServerError
 	}
 	if has {

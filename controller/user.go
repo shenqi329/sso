@@ -9,6 +9,7 @@ import (
 	"sso/request"
 	ssoresponse "sso/response"
 	"sso/service"
+	"strconv"
 )
 
 func UserRegisetrEMailVerifyCode(c echo.Context) error {
@@ -37,6 +38,7 @@ func UserInfo(c echo.Context) error {
 
 	response := bean.NEWResponse(ssoerror.CommonSuccess)
 	responseData := &ssoresponse.User{
+		Id:               strconv.FormatInt(userBean.ID, 10),
 		UserName:         userBean.UserName,
 		Name:             userBean.Name,
 		Icon:             userBean.Icon,
@@ -191,7 +193,7 @@ func UserLogin(c echo.Context) error {
 	}
 	response := bean.NEWResponse(ssoerror.CommonSuccess)
 	response.Data = map[string]interface{}{
-		"id":    userBean.ID,
+		"id":    strconv.FormatInt(userBean.ID, 10),
 		"token": tokenBean.Token,
 	}
 

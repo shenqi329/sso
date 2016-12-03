@@ -36,13 +36,19 @@ CREATE TABLE `t_token` (
   `t_token_app_id` varchar(36) NOT NULL  COMMENT '应用id',
   `t_token_platform` varchar(10) NOT NULL  COMMENT '平台',
   `t_token_create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '生成时间',
-  `t_token_expaired_time` datetime NOT NULL  DEFAULT CURRENT_TIMESTAMP COMMENT '修改日期',
+  `t_token_expired_time` datetime NOT NULL  DEFAULT CURRENT_TIMESTAMP COMMENT '修改日期',
   PRIMARY KEY (`t_token_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='用户表';
 
-alter table db_sso.t_token add `t_token_device_id` varchar(36) NOT NULL  COMMENT '设备id';
-alter table db_sso.t_token add `t_token_app_id` varchar(36) NOT NULL  COMMENT '应用id';
-alter table db_sso.t_token add `t_token_platform` varchar(10) NOT NULL  COMMENT '平台';
+drop table `t_verify`;
+create table `t_verify`(
+  `t_verify_id` 			bigint(20) 	NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `t_verify_verify_type`  	int8 NOT NULL COMMENT '验证类型 1:注册邮箱 2:注册电话 3:修改邮箱 4:修改电话号码',
+  `t_verify_verify_id`		varchar(100) NOT NULL COMMENT '被验证的系统的id,比如邮箱号,电话号码',
+  `t_verify_code`			varchar(10) NOT NULL COMMENT '验证码',
+  `t_verify_expired_time`	datetime NOT NULL  DEFAULT CURRENT_TIMESTAMP COMMENT '过期时间',
+  PRIMARY KEY (`t_verify_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='验证码表';
 
 
 
