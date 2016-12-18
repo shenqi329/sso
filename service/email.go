@@ -47,9 +47,11 @@ func UserRegisetrEMailVerifyCode(user *bean.User) error {
 
 	has, err = dao.GetUser(&bean.User{Email: user.Email})
 	if err != nil {
+		log.Println(err.Error())
 		return ssoerror.ErrorInternalServerError
 	}
 	if has {
+		log.Println("用户已存在")
 		return ssoerror.ErrorRegisterEmailInUse
 	}
 
@@ -62,8 +64,10 @@ func UserRegisetrEMailVerifyCode(user *bean.User) error {
 			VerifyCode:  verifyCode,
 			ExpiredTime: &expiredTime,
 		}
+
 		count, err := dao.InsertVerify(verifyBean)
 		if err != nil {
+			log.Println(err.Error())
 			return ssoerror.ErrorInternalServerError
 		}
 		if count <= 0 {
@@ -125,10 +129,13 @@ func ChangeEmailVerifyCode(token string, newEmail string) error {
 		ExpiredTime: &expiredTime,
 	}
 	count, err := dao.InsertVerify(verifyBean)
+	log.Println(count, err)
 	if err != nil {
+		log.Println(err.Error())
 		return ssoerror.ErrorInternalServerError
 	}
 	if count <= 0 {
+		log.Println("小雨")
 		return ssoerror.ErrorInternalServerError
 	}
 
