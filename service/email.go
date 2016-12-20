@@ -166,6 +166,9 @@ func SendEmail(email *Email) {
 				[]string{v},
 				[]byte(str),
 			)
+			if err != nil {
+				log.Println(err)
+			}
 			done <- err
 		}
 	}()

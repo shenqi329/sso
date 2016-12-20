@@ -232,8 +232,8 @@ func UserRegister(register *request.Register) (*bean.User, error) {
 		return nil, ssoerror.ErrorRegisterUserExist
 	}
 
-	has, err = dao.GetVerify(&bean.Verify{Type: bean.VerifyTypeRegisterEmail, VerifyId: register.Email, VerifyCode: register.VerifyCode})
-	//has, err = dao.GetEmail(&bean.Email{Email: register.Email, UserName: register.UserName, VerifyCode: register.VerifyCode})
+	verify := &bean.Verify{Type: bean.VerifyTypeRegisterEmail, VerifyId: register.Email, VerifyCode: register.VerifyCode}
+	has, err = dao.GetVerify(verify)
 	if err != nil {
 		log.Println(err.Error())
 		return nil, ssoerror.ErrorInternalServerError
@@ -245,6 +245,12 @@ func UserRegister(register *request.Register) (*bean.User, error) {
 	}
 
 	timeNow := time.Now()
+
+	if timeNow.After(*verify.ExpiredTime) {
+		log.Println("验证码超时")
+		return nil, ssoerror.ErrorRegisterErrorVerifyCode
+	}
+
 	user := &bean.User{
 		UserName:         register.UserName,
 		Password:         register.Password,

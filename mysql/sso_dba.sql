@@ -1,8 +1,8 @@
 use db_sso;
+SET SQL_SAFE_UPDATES = 0;
 
 
 drop table `t_user`;
-
 CREATE TABLE `t_user` (
   `t_user_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
   `t_user_username` varchar(100) NOT NULL COMMENT '用户名',
@@ -23,11 +23,9 @@ CREATE TABLE `t_user` (
   PRIMARY KEY (`t_user_id`),
   UNIQUE KEY `t_user_username` (`t_user_username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='用户表';
-
 alter table db_sso.t_token change `t_user_email` `t_user_email` varchar(200) DEFAULT NULL COMMENT '邮箱';
 
 drop table `t_token`;
-
 CREATE TABLE `t_token` (
   `t_token_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
   `t_token_user_id` bigint(20) NOT NULL COMMENT '用户id',
@@ -47,8 +45,24 @@ create table `t_verify`(
   `t_verify_verify_id`		varchar(100) NOT NULL COMMENT '被验证的系统的id,比如邮箱号,电话号码',
   `t_verify_code`			varchar(10) NOT NULL COMMENT '验证码',
   `t_verify_expired_time`	datetime NOT NULL  DEFAULT CURRENT_TIMESTAMP COMMENT '过期时间',
-  PRIMARY KEY (`t_verify_id`)
+  PRIMARY KEY (`t_verify_id`),
+  UNIQUE KEY `t_verify_verify_id` (`t_verify_verify_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='验证码表';
+alter table db_sso.t_verify add unique key `t_verify_verify_id` (`t_verify_verify_id`);
+
+drop procedure delete_verify_expired_time_data;
+DELIMITER //
+create procedure delete_verify_expired_time_data() 
+begin
+	delete from t_verify where t_verify_expired_time < now();
+commit;
+end;
+//
+DELIMITER ;
+-- 事件
+create event delete_verify_expired_time_data on schedule every 1 minute
+do
+call delete_verify_expired_time_data();
 
 
 
