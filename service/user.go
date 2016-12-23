@@ -185,7 +185,7 @@ func ChangeEmail(token string, newEmail string, verifyCode string) error {
 		return err
 	}
 
-	has, err := dao.GetVerify(&bean.Verify{Type: bean.VerifyTypeChangeEmail, VerifyId: newEmail, VerifyCode: verifyCode})
+	has, err := dao.GetVerify(&bean.Verify{Type: bean.VerifyTypeChangeEmail, VerifyId: newEmail, Code: verifyCode})
 	if err != nil {
 		log.Println(err.Error())
 		return ssoerror.ErrorInternalServerError
@@ -232,7 +232,7 @@ func UserRegister(register *request.Register) (*bean.User, error) {
 		return nil, ssoerror.ErrorRegisterUserExist
 	}
 
-	verify := &bean.Verify{Type: bean.VerifyTypeRegisterEmail, VerifyId: register.Email, VerifyCode: register.VerifyCode}
+	verify := &bean.Verify{Type: bean.VerifyTypeRegisterEmail, VerifyId: register.Email, Code: register.VerifyCode}
 	has, err = dao.GetVerify(verify)
 	if err != nil {
 		log.Println(err.Error())
@@ -245,9 +245,12 @@ func UserRegister(register *request.Register) (*bean.User, error) {
 	}
 
 	timeNow := time.Now()
-
 	if timeNow.After(*verify.ExpiredTime) {
 		log.Println("验证码超时")
+		return nil, ssoerror.ErrorRegisterErrorVerifyCode
+	}
+	if !strings.EqualFold(verify.Code, register.VerifyCode) {
+		log.Println("验证码错误")
 		return nil, ssoerror.ErrorRegisterErrorVerifyCode
 	}
 

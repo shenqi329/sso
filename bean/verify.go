@@ -13,11 +13,11 @@ const (
 
 type (
 	Verify struct {
-		ID          int64      `xorm:"'t_verify_id'" json:"id,omitempty"`
-		Type        int8       `xorm:"'t_verify_verify_type'" json:"type,omitempty"`
-		VerifyId    string     `xorm:"'t_verify_verify_id'" json:"verifyId,omitempty"`
-		VerifyCode  string     `xorm:"'t_verify_code'" json:"verifyCode,omitempty"`
-		ExpiredTime *time.Time `xorm:"'t_verify_expired_time'" json:"expiredTime"`
+		ID          int64      `xorm:"'id'" json:"id,omitempty"`
+		Type        int8       `xorm:"'type'" json:"type,omitempty"`
+		VerifyId    string     `xorm:"'verify_id'" json:"verifyId,omitempty"`
+		Code        string     `xorm:"'code'" json:"verifyCode,omitempty"`
+		ExpiredTime *time.Time `xorm:"'expired_time'" json:"expiredTime"`
 	}
 )
 

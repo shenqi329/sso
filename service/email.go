@@ -61,7 +61,7 @@ func UserRegisetrEMailVerifyCode(user *bean.User) error {
 		verifyBean := &bean.Verify{
 			Type:        bean.VerifyTypeRegisterEmail,
 			VerifyId:    user.Email,
-			VerifyCode:  verifyCode,
+			Code:        verifyCode,
 			ExpiredTime: &expiredTime,
 		}
 
@@ -125,7 +125,7 @@ func ChangeEmailVerifyCode(token string, newEmail string) error {
 	verifyBean := &bean.Verify{
 		Type:        bean.VerifyTypeChangeEmail,
 		VerifyId:    newEmail,
-		VerifyCode:  emailCode,
+		Code:        emailCode,
 		ExpiredTime: &expiredTime,
 	}
 	count, err := dao.InsertVerify(verifyBean)
