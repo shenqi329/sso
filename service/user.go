@@ -77,8 +77,8 @@ func UserLogin(login *request.Login) (*bean.User, *bean.Token, error) {
 		Platform:    token.Platform,
 		UserId:      user.ID,
 		Token:       uuid.Rand().Hex(),
-		ExpiredTime: &expiredTime,
-		CreateTime:  &createTime,
+		ExpiredTime: expiredTime,
+		CreateTime:  createTime,
 	}
 
 	err = dao.InsertToken(tokenBean)
